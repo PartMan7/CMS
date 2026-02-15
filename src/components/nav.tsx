@@ -8,11 +8,18 @@ import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
+	Tooltip,
+	TooltipTrigger,
+	TooltipContent,
+} from '@/components/ui/tooltip';
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuTrigger,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Sun, Moon, Palette } from 'lucide-react';
+import { Sun, Moon, Palette, Keyboard, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAccent } from '@/components/accent-provider';
 import { ACCENTS, ACCENT_NAMES, type AccentName } from '@/lib/accents';
@@ -21,6 +28,13 @@ interface NavProps {
 	role: string;
 	username: string;
 }
+
+/**
+ * Shared classes applied to every icon-button so the hover look also shows
+ * while the Radix tooltip is open (data-state="delayed-open" | "instant-open").
+ */
+const ICON_BTN =
+	'h-8 w-8 p-0 data-[state=delayed-open]:bg-accent data-[state=instant-open]:bg-accent data-[state=delayed-open]:text-accent-foreground data-[state=instant-open]:text-accent-foreground';
 
 export function Nav({ role, username }: NavProps) {
 	const pathname = usePathname();
@@ -32,7 +46,6 @@ export function Nav({ role, username }: NavProps) {
 	const links = [
 		{ href: '/upload', label: 'Upload', minRole: 'uploader' },
 		{ href: '/dashboard', label: 'Dashboard', minRole: 'guest' },
-		{ href: '/admin/upload', label: 'Admin Upload', minRole: 'admin' },
 		{ href: '/admin/users', label: 'Users', minRole: 'admin' },
 		{ href: '/admin/content', label: 'Content', minRole: 'admin' },
 	];
@@ -44,11 +57,16 @@ export function Nav({ role, username }: NavProps) {
 	};
 
 	const userLevel = roleLevel[role] ?? 0;
-
 	const visibleLinks = links.filter(link => userLevel >= (roleLevel[link.minRole] ?? 0));
 
 	function toggleTheme() {
 		setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
+	}
+
+	function openShortcuts() {
+		window.dispatchEvent(
+			new KeyboardEvent('keydown', { key: '/', ctrlKey: true, bubbles: true })
+		);
 	}
 
 	const roleBadgeColor: Record<string, string> = {
@@ -57,86 +75,190 @@ export function Nav({ role, username }: NavProps) {
 		guest: 'bg-ctp-overlay0/15 text-ctp-overlay0 border-ctp-overlay0/30',
 	};
 
-	/** Pick the right hex for the current theme (falls back to light before mount) */
 	function accentHex(name: AccentName) {
 		return mounted && resolvedTheme === 'dark' ? ACCENTS[name].dark : ACCENTS[name].light;
 	}
 
+	/* ── Shared icon buttons (rendered in both mobile & desktop) ──────── */
+	const iconButtons = (
+		<>
+			{/* Accent picker */}
+			<DropdownMenu>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<DropdownMenuTrigger asChild>
+							<Button
+								variant="ghost"
+								size="sm"
+								className={cn(ICON_BTN, 'group/accent')}
+								aria-label="Choose accent colour"
+							>
+								<Palette className="h-4 w-4 transition-transform duration-200 group-hover/accent:rotate-30" aria-hidden="true" />
+							</Button>
+						</DropdownMenuTrigger>
+					</TooltipTrigger>
+					<TooltipContent>Accent colour</TooltipContent>
+				</Tooltip>
+				<DropdownMenuContent
+					align="end"
+					className="grid grid-cols-7 gap-1 p-2 w-auto min-w-0"
+					aria-label="Accent colour options"
+				>
+					{ACCENT_NAMES.map(name => (
+						<button
+							key={name}
+							onClick={() => setAccent(name)}
+							aria-label={`${ACCENTS[name].label} accent${accent === name ? ' (selected)' : ''}`}
+							aria-pressed={accent === name}
+							className={cn(
+								'w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+								accent === name && 'ring-2 ring-foreground ring-offset-2 ring-offset-background'
+							)}
+							style={{ backgroundColor: accentHex(name) }}
+						/>
+					))}
+				</DropdownMenuContent>
+			</DropdownMenu>
+
+			{/* Theme toggle */}
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button
+						variant="ghost"
+						size="sm"
+						className={cn(ICON_BTN, 'group/theme')}
+						onClick={toggleTheme}
+						aria-label={mounted ? `Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode` : 'Toggle theme'}
+					>
+						<Sun className="h-4 w-4 rotate-0 scale-100 transition-transform duration-300 group-hover/theme:rotate-45 dark:-rotate-90 dark:scale-0" aria-hidden="true" />
+						<Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100 dark:group-hover/theme:-rotate-12" aria-hidden="true" />
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					{mounted
+						? resolvedTheme === 'dark'
+							? 'Light mode'
+							: 'Dark mode'
+						: 'Toggle theme'}
+				</TooltipContent>
+			</Tooltip>
+
+			{/* Keyboard shortcuts hint */}
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button
+						variant="ghost"
+						size="sm"
+						className={cn(ICON_BTN, 'group/kbd')}
+						onClick={openShortcuts}
+						aria-label="Keyboard shortcuts (Ctrl+/)"
+					>
+						<Keyboard className="h-4 w-4 transition-transform duration-200 group-hover/kbd:scale-110" aria-hidden="true" />
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>Keyboard shortcuts</TooltipContent>
+			</Tooltip>
+		</>
+	);
+
 	return (
-		<nav className="border-b bg-card">
+		<nav className="border-b bg-card" aria-label="Main navigation">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center justify-between h-14">
+					{/* Left: logo + desktop links */}
 					<div className="flex items-center gap-6">
-						<Link href="/upload" className="font-semibold text-lg text-primary">
+						<Link href="/upload" className="font-semibold text-lg text-primary" aria-label="CMS - Go to upload">
 							CMS
 						</Link>
-						<div className="flex items-center gap-1">
-							{visibleLinks.map(link => (
-								<Link
-									key={link.href}
-									href={link.href}
-									className={cn(
-										'px-3 py-1.5 text-sm rounded-md transition-colors',
-										pathname === link.href
-											? 'bg-primary text-primary-foreground'
-											: 'text-muted-foreground hover:text-foreground hover:bg-muted'
-									)}
-								>
-									{link.label}
-								</Link>
-							))}
+
+						{/* Desktop nav links — hidden on small screens */}
+						<div className="hidden md:flex items-center gap-1" role="list" aria-label="Site pages">
+							{visibleLinks.map(link => {
+								const isCurrent = pathname === link.href;
+								return (
+									<Link
+										key={link.href}
+										href={link.href}
+										role="listitem"
+										aria-current={isCurrent ? 'page' : undefined}
+										className={cn(
+											'px-3 py-1.5 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+											isCurrent
+												? 'bg-primary text-primary-foreground'
+												: 'text-muted-foreground hover:text-foreground hover:bg-muted'
+										)}
+									>
+										{link.label}
+									</Link>
+								);
+							})}
 						</div>
 					</div>
-					<div className="flex items-center gap-3">
+
+					{/* Right side: desktop */}
+					<div className="hidden md:flex items-center gap-3">
 						<span className="text-sm text-muted-foreground">{username}</span>
 						<Badge variant="outline" className={cn('text-xs', roleBadgeColor[role])}>
 							{role}
 						</Badge>
-
-						{/* Accent picker */}
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									variant="ghost"
-									size="sm"
-									className="h-8 w-8 p-0"
-									title="Choose accent colour"
-								>
-									<Palette className="h-4 w-4" />
-									<span className="sr-only">Choose accent</span>
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="grid grid-cols-7 gap-1 p-2 w-auto min-w-0">
-								{ACCENT_NAMES.map(name => (
-									<button
-										key={name}
-										onClick={() => setAccent(name)}
-										title={ACCENTS[name].label}
-										className={cn(
-											'w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-											accent === name && 'ring-2 ring-foreground ring-offset-2 ring-offset-background'
-										)}
-										style={{ backgroundColor: accentHex(name) }}
-									/>
-								))}
-							</DropdownMenuContent>
-						</DropdownMenu>
-
-						{/* Theme toggle */}
-						<Button
-							variant="ghost"
-							size="sm"
-							className="h-8 w-8 p-0"
-							onClick={toggleTheme}
-							title={mounted ? `Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode` : 'Toggle theme'}
-						>
-							<Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-							<Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-							<span className="sr-only">Toggle theme</span>
-						</Button>
+						{iconButtons}
 						<Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: '/login' })}>
 							Sign Out
 						</Button>
+					</div>
+
+					{/* Right side: mobile — icon buttons + hamburger */}
+					<div className="flex md:hidden items-center gap-1">
+						{iconButtons}
+
+						<DropdownMenu>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<DropdownMenuTrigger asChild>
+										<Button
+											variant="ghost"
+											size="sm"
+											className={cn(ICON_BTN, 'group/menu')}
+											aria-label="Open menu"
+										>
+											<Menu className="h-5 w-5 transition-transform duration-200 group-hover/menu:scale-110" aria-hidden="true" />
+										</Button>
+									</DropdownMenuTrigger>
+								</TooltipTrigger>
+								<TooltipContent>Menu</TooltipContent>
+							</Tooltip>
+							<DropdownMenuContent align="end" className="w-52">
+								{/* User info */}
+								<div className="px-3 py-2 flex items-center gap-2">
+									<span className="text-sm text-muted-foreground truncate">{username}</span>
+									<Badge variant="outline" className={cn('text-xs shrink-0', roleBadgeColor[role])}>
+										{role}
+									</Badge>
+								</div>
+								<DropdownMenuSeparator />
+
+								{/* Nav links */}
+								{visibleLinks.map(link => {
+									const isCurrent = pathname === link.href;
+									return (
+										<DropdownMenuItem key={link.href} asChild>
+											<Link
+												href={link.href}
+												aria-current={isCurrent ? 'page' : undefined}
+												className={cn(isCurrent && 'font-semibold text-primary')}
+											>
+												{link.label}
+											</Link>
+										</DropdownMenuItem>
+									);
+								})}
+
+								<DropdownMenuSeparator />
+								<DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
+									Sign Out
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</div>
 			</div>

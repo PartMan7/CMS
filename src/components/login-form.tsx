@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { RequiredMark } from '@/components/required-mark';
 
 export function LoginForm() {
 	const router = useRouter();
@@ -53,18 +54,20 @@ export function LoginForm() {
 					<CardDescription>Sign in to cms.partman.dev</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleSubmit} className="space-y-4">
-						{error && (
-							<Alert variant="destructive">
-								<AlertDescription>{error}</AlertDescription>
-							</Alert>
-						)}
-						<div className="space-y-2">
-							<Label htmlFor="username">Username</Label>
-							<Input id="username" name="username" type="text" required autoComplete="username" placeholder="Enter your username" />
+					<form onSubmit={handleSubmit} className="space-y-4" aria-label="Login form">
+						<div aria-live="assertive" aria-atomic="true">
+							{error && (
+								<Alert variant="destructive">
+									<AlertDescription>{error}</AlertDescription>
+								</Alert>
+							)}
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="password">Password</Label>
+							<Label htmlFor="username">Username<RequiredMark /></Label>
+							<Input id="username" name="username" type="text" required autoComplete="username" placeholder="Enter your username" aria-required="true" />
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="password">Password<RequiredMark /></Label>
 							<Input
 								id="password"
 								name="password"
@@ -72,9 +75,10 @@ export function LoginForm() {
 								required
 								autoComplete="current-password"
 								placeholder="Enter your password"
+								aria-required="true"
 							/>
 						</div>
-						<Button type="submit" className="w-full" disabled={loading}>
+						<Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
 							{loading ? 'Signing in...' : 'Sign In'}
 						</Button>
 					</form>

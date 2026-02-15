@@ -11,7 +11,8 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Link2, Trash2, ShieldCheck, Unlink } from 'lucide-react';
+import { MoreHorizontal, Eye, Link2, Trash2, ShieldCheck, Unlink, Copy, FileCode } from 'lucide-react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 
 interface ContentItem {
@@ -190,31 +191,56 @@ export function ContentManager() {
 		}
 	}
 
-	if (loading) return <p className="text-muted-foreground">Loading content...</p>;
+	/** Copy the best URL for an item (first short slug, or /c fallback) to clipboard. */
+	function copyUrl(item: ContentItem) {
+		const path = item.shortSlugs.length > 0
+			? `/s/${item.shortSlugs[0].slug}`
+			: `/c/${item.id}`;
+		const full = `${window.location.origin}${path}`;
+		navigator.clipboard.writeText(full).then(
+			() => toast.success('URL copied'),
+			() => toast.error('Failed to copy')
+		);
+	}
+
+	/** Copy the raw / embed URL for an item to clipboard. */
+	function copyRawUrl(item: ContentItem) {
+		const path = item.shortSlugs.length > 0
+			? `/e/${item.shortSlugs[0].slug}`
+			: `/r/${item.id}`;
+		const full = `${window.location.origin}${path}`;
+		navigator.clipboard.writeText(full).then(
+			() => toast.success('Raw URL copied'),
+			() => toast.error('Failed to copy')
+		);
+	}
+
+	if (loading) return <p className="text-muted-foreground" role="status" aria-live="polite">Loading content...</p>;
 
 	return (
 		<div className="space-y-4">
-			<p className="text-muted-foreground">{content.length} item(s)</p>
+			<p className="text-muted-foreground" aria-live="polite">{content.length} item(s)</p>
 
-			<div className="rounded-md border overflow-x-auto">
-				<Table>
+			<div className="rounded-md border overflow-x-auto" role="region" aria-label="Content table" tabIndex={0}>
+				<Table aria-label="Uploaded content">
 					<TableHeader>
 						<TableRow>
-							<TableHead className="w-10"></TableHead>
+							<TableHead className="w-10"><span className="sr-only">Preview</span></TableHead>
 							<TableHead>Filename</TableHead>
-							<TableHead>Short URLs</TableHead>
-							<TableHead>Directory</TableHead>
-							<TableHead>Size</TableHead>
+							<TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
 							<TableHead>Type</TableHead>
+							<TableHead>Size</TableHead>
 							<TableHead>Uploaded By</TableHead>
 							<TableHead>Expiry</TableHead>
 							<TableHead>Created</TableHead>
-							<TableHead className="text-right w-12">Actions</TableHead>
+							<TableHead>Short URLs</TableHead>
+							<TableHead>Directory</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{content.map(item => (
 							<TableRow key={item.id} className={isExpired(item.expiresAt) ? 'opacity-50' : ''}>
+								{/* Preview */}
 								<TableCell>
 									{isImage(item.mimeType) && item.previewPath ? (
 										/* eslint-disable-next-line @next/next/no-img-element */
@@ -228,52 +254,18 @@ export function ContentManager() {
 										<FileExtIcon ext={item.fileExtension} />
 									)}
 								</TableCell>
-								<TableCell className="font-medium max-w-48 truncate">{item.filename}</TableCell>
-								<TableCell>
-									<div className="flex flex-col gap-1">
-										{item.shortSlugs.length > 0 ? (
-											item.shortSlugs.map(({ slug }) => (
-												<div key={slug} className="flex items-center gap-1">
-													<a href={`/s/${slug}`} className="text-primary underline text-sm" target="_blank">
-														/s/{slug}
-													</a>
-												</div>
-											))
-										) : (
-											<span className="text-muted-foreground text-sm">-</span>
-										)}
-									</div>
+								{/* Filename */}
+								<TableCell className="font-medium max-w-48 truncate">
+									<Link href={`/c/${item.id}`} className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background rounded-sm">
+										{item.filename}
+									</Link>
 								</TableCell>
+								{/* Actions */}
 								<TableCell>
-									{item.directory ? (
-										<Badge variant="outline">{item.directory}</Badge>
-									) : (
-										<span className="text-muted-foreground">-</span>
-									)}
-								</TableCell>
-								<TableCell>{formatSize(item.fileSize)}</TableCell>
-								<TableCell>
-									<Badge variant="secondary">{item.fileExtension}</Badge>
-								</TableCell>
-								<TableCell>{item.uploadedBy.username}</TableCell>
-								<TableCell>
-									{item.expiresAt ? (
-										isExpired(item.expiresAt) ? (
-											<Badge variant="destructive">Expired</Badge>
-										) : (
-											<span className="text-sm">{new Date(item.expiresAt).toLocaleString()}</span>
-										)
-									) : (
-										<Badge>Permanent</Badge>
-									)}
-								</TableCell>
-								<TableCell className="text-sm">{new Date(item.createdAt).toLocaleDateString()}</TableCell>
-								<TableCell className="text-right">
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-												<MoreHorizontal className="h-4 w-4" />
-												<span className="sr-only">Open menu</span>
+											<Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label={`Actions for ${item.filename}`}>
+												<MoreHorizontal className="h-4 w-4" aria-hidden="true" />
 											</Button>
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end">
@@ -281,6 +273,15 @@ export function ContentManager() {
 												<Eye className="mr-2 h-4 w-4" />
 												View
 											</DropdownMenuItem>
+											<DropdownMenuItem onClick={() => copyUrl(item)}>
+												<Copy className="mr-2 h-4 w-4" />
+												Copy URL
+											</DropdownMenuItem>
+											<DropdownMenuItem onClick={() => copyRawUrl(item)}>
+												<FileCode className="mr-2 h-4 w-4" />
+												Copy Raw URL
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
 											<DropdownMenuItem onClick={() => handleAddSlug(item)}>
 												<Link2 className="mr-2 h-4 w-4" />
 												Add Slug
@@ -311,6 +312,53 @@ export function ContentManager() {
 											</DropdownMenuItem>
 										</DropdownMenuContent>
 									</DropdownMenu>
+								</TableCell>
+								{/* Type */}
+								<TableCell>
+									<Badge variant="secondary">{item.fileExtension}</Badge>
+								</TableCell>
+								{/* Size */}
+								<TableCell>{formatSize(item.fileSize)}</TableCell>
+								{/* Uploaded By */}
+								<TableCell>{item.uploadedBy.username}</TableCell>
+								{/* Expiry */}
+								<TableCell>
+									{item.expiresAt ? (
+										isExpired(item.expiresAt) ? (
+											<Badge variant="destructive">Expired</Badge>
+										) : (
+											<span className="text-sm">{new Date(item.expiresAt).toLocaleString()}</span>
+										)
+									) : (
+										<Badge>Permanent</Badge>
+									)}
+								</TableCell>
+								{/* Created */}
+								<TableCell className="text-sm">{new Date(item.createdAt).toLocaleDateString()}</TableCell>
+								{/* Short URLs */}
+								<TableCell>
+									<div className="flex flex-col gap-1">
+										{item.shortSlugs.length > 0 ? (
+											item.shortSlugs.map(({ slug }) => (
+												<div key={slug} className="flex items-center gap-1">
+													<a href={`/s/${slug}`} className="text-primary underline text-sm" target="_blank" rel="noopener noreferrer">
+														/s/{slug}
+														<span className="sr-only"> (opens in new tab)</span>
+													</a>
+												</div>
+											))
+										) : (
+											<span className="text-muted-foreground text-sm">-</span>
+										)}
+									</div>
+								</TableCell>
+								{/* Directory */}
+								<TableCell>
+									{item.directory ? (
+										<Badge variant="outline">{item.directory}</Badge>
+									) : (
+										<span className="text-muted-foreground">-</span>
+									)}
 								</TableCell>
 							</TableRow>
 						))}

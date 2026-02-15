@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from '@/components/theme-provider';
 import { AccentProvider } from '@/components/accent-provider';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
+import { SkipLink } from '@/components/skip-link';
+import { KeyboardShortcuts } from '@/components/keyboard-shortcuts';
 import { ACCENTS } from '@/lib/accents';
 import './globals.css';
 
@@ -31,8 +34,12 @@ export default function RootLayout({
 			<body className="antialiased min-h-screen bg-background">
 				<ThemeProvider>
 					<AccentProvider>
-						{children}
-						<Toaster />
+						<TooltipProvider>
+							<SkipLink />
+							{children}
+							<KeyboardShortcuts />
+							<Toaster />
+						</TooltipProvider>
 					</AccentProvider>
 				</ThemeProvider>
 			</body>

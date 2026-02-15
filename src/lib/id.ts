@@ -3,10 +3,10 @@ import { prisma } from './prisma';
 
 /**
  * Alphabet: lowercase + digits (base36). URL-safe, easy to read/copy.
- * 8 chars of base36 = 36^8 ≈ 2.8 trillion combinations.
+ * 6 chars of base36 = 36^6 ≈ 2.2 billion combinations.
  */
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz0123456789';
-const ID_LENGTH = 8;
+const ID_LENGTH = 6;
 
 /**
  * Generate a random short ID string.

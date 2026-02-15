@@ -42,7 +42,7 @@ export default async function DashboardPage() {
 	return (
 		<div className="min-h-screen">
 			<Nav role={role} username={username ?? 'Unknown'} />
-			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				<h1 className="text-3xl font-bold mb-6">Dashboard</h1>
 
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -74,7 +74,14 @@ export default async function DashboardPage() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								<div className="w-full bg-muted rounded-full h-3">
+								<div
+									className="w-full bg-muted rounded-full h-3"
+									role="progressbar"
+									aria-valuenow={Math.min(Number(usagePercent), 100)}
+									aria-valuemin={0}
+									aria-valuemax={100}
+									aria-label={`Storage usage: ${usedMB} MB of ${limitMB} MB used`}
+								>
 									<div
 										className="bg-primary h-3 rounded-full transition-all"
 										style={{ width: `${Math.min(Number(usagePercent), 100)}%` }}
@@ -91,7 +98,7 @@ export default async function DashboardPage() {
 							<CardTitle>Quick Actions</CardTitle>
 							<CardDescription>Common tasks</CardDescription>
 						</CardHeader>
-						<CardContent className="space-y-2">
+						<CardContent className="flex flex-col gap-3">
 							{canUpload(role) && (
 								<Link href="/upload">
 									<Button className="w-full" variant="outline">
@@ -101,11 +108,6 @@ export default async function DashboardPage() {
 							)}
 							{isAdmin(role) && (
 								<>
-									<Link href="/admin/upload">
-										<Button className="w-full" variant="outline">
-											Admin Upload
-										</Button>
-									</Link>
 									<Link href="/admin/users">
 										<Button className="w-full" variant="outline">
 											Manage Users
@@ -141,7 +143,7 @@ export default async function DashboardPage() {
 						</Card>
 					)}
 				</div>
-			</div>
+			</main>
 		</div>
 	);
 }

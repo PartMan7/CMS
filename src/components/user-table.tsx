@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { RequiredMark } from '@/components/required-mark';
 import { toast } from 'sonner';
 
 interface User {
@@ -62,12 +63,12 @@ export function UserManager({ currentUserId }: UserManagerProps) {
 		}
 	}
 
-	if (loading) return <p className="text-muted-foreground">Loading users...</p>;
+	if (loading) return <p className="text-muted-foreground" role="status" aria-live="polite">Loading users...</p>;
 
 	return (
 		<div className="space-y-4">
 			<div className="flex justify-between items-center">
-				<p className="text-muted-foreground">{users.length} user(s)</p>
+				<p className="text-muted-foreground" aria-live="polite">{users.length} user(s)</p>
 				<Dialog open={showCreate} onOpenChange={setShowCreate}>
 					<DialogTrigger asChild>
 						<Button>Add User</Button>
@@ -87,14 +88,14 @@ export function UserManager({ currentUserId }: UserManagerProps) {
 				</Dialog>
 			</div>
 
-			<Table>
+			<Table aria-label="User accounts">
 				<TableHeader>
 					<TableRow>
 						<TableHead>Username</TableHead>
 						<TableHead>Role</TableHead>
 						<TableHead>Content</TableHead>
 						<TableHead>Created</TableHead>
-						<TableHead className="text-right">Actions</TableHead>
+						<TableHead className="text-right"><span className="sr-only">Actions</span></TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -180,24 +181,26 @@ function CreateUserForm({ onSuccess }: { onSuccess: () => void }) {
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-4">
-			{error && (
-				<Alert variant="destructive">
-					<AlertDescription>{error}</AlertDescription>
-				</Alert>
-			)}
-			<div className="space-y-2">
-				<Label htmlFor="new-username">Username</Label>
-				<Input id="new-username" name="username" required minLength={3} maxLength={50} />
+		<form onSubmit={handleSubmit} className="space-y-4" aria-label="Create new user">
+			<div aria-live="assertive" aria-atomic="true">
+				{error && (
+					<Alert variant="destructive">
+						<AlertDescription>{error}</AlertDescription>
+					</Alert>
+				)}
 			</div>
 			<div className="space-y-2">
-				<Label htmlFor="new-password">Password</Label>
-				<Input id="new-password" name="password" type="password" required minLength={8} />
+				<Label htmlFor="new-username">Username<RequiredMark /></Label>
+				<Input id="new-username" name="username" required minLength={3} maxLength={50} aria-required="true" />
 			</div>
 			<div className="space-y-2">
-				<Label>Role</Label>
-				<Select value={role} onValueChange={setRole}>
-					<SelectTrigger>
+				<Label htmlFor="new-password">Password<RequiredMark /></Label>
+				<Input id="new-password" name="password" type="password" required minLength={8} aria-required="true" />
+			</div>
+			<div className="space-y-2">
+				<Label>Role<RequiredMark /></Label>
+				<Select value={role} onValueChange={setRole} required>
+					<SelectTrigger aria-label="Select role" aria-required="true">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -207,7 +210,7 @@ function CreateUserForm({ onSuccess }: { onSuccess: () => void }) {
 					</SelectContent>
 				</Select>
 			</div>
-			<Button type="submit" className="w-full" disabled={loading}>
+			<Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
 				{loading ? 'Creating...' : 'Create User'}
 			</Button>
 		</form>
@@ -255,24 +258,26 @@ function EditUserForm({ user, onSuccess }: { user: User; onSuccess: () => void }
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-4">
-			{error && (
-				<Alert variant="destructive">
-					<AlertDescription>{error}</AlertDescription>
-				</Alert>
-			)}
+		<form onSubmit={handleSubmit} className="space-y-4" aria-label={`Edit user ${user.username}`}>
+			<div aria-live="assertive" aria-atomic="true">
+				{error && (
+					<Alert variant="destructive">
+						<AlertDescription>{error}</AlertDescription>
+					</Alert>
+				)}
+			</div>
 			<div className="space-y-2">
 				<Label htmlFor="edit-username">Username</Label>
 				<Input id="edit-username" name="username" defaultValue={user.username} minLength={3} maxLength={50} />
 			</div>
 			<div className="space-y-2">
-				<Label htmlFor="edit-password">New Password (leave blank to keep)</Label>
-				<Input id="edit-password" name="password" type="password" minLength={8} />
+				<Label htmlFor="edit-password">New Password</Label>
+				<Input id="edit-password" name="password" type="password" minLength={8} placeholder="Leave blank to keep current" />
 			</div>
 			<div className="space-y-2">
-				<Label>Role</Label>
-				<Select value={role} onValueChange={setRole}>
-					<SelectTrigger>
+				<Label>Role<RequiredMark /></Label>
+				<Select value={role} onValueChange={setRole} required>
+					<SelectTrigger aria-label="Select role" aria-required="true">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -282,7 +287,7 @@ function EditUserForm({ user, onSuccess }: { user: User; onSuccess: () => void }
 					</SelectContent>
 				</Select>
 			</div>
-			<Button type="submit" className="w-full" disabled={loading}>
+			<Button type="submit" className="w-full" disabled={loading} aria-busy={loading}>
 				{loading ? 'Saving...' : 'Save Changes'}
 			</Button>
 		</form>

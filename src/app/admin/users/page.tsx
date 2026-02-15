@@ -12,10 +12,10 @@ export default async function AdminUsersPage() {
 	return (
 		<div className="min-h-screen">
 			<Nav role={session.user.role} username={session.user.name ?? 'Unknown'} />
-			<div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+			<main id="main-content" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				<h1 className="text-3xl font-bold mb-6">User Management</h1>
 				<UserManager currentUserId={session.user.id} />
-			</div>
+			</main>
 		</div>
 	);
 }
