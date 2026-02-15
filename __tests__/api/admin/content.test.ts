@@ -6,15 +6,21 @@ import { jsonRequest, parseResponse } from '../../helpers';
 import { NextRequest } from 'next/server';
 
 describe('GET /api/admin/content', () => {
+	const makeReq = (params?: Record<string, string>) => {
+		const url = new URL('http://localhost:3000/api/admin/content');
+		if (params) Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+		return new NextRequest(url);
+	};
+
 	it('returns 403 for non-admin', async () => {
 		mockUploader();
-		const { status } = await parseResponse(await GET());
+		const { status } = await parseResponse(await GET(makeReq()));
 		expect(status).toBe(403);
 	});
 
 	it('returns 403 for unauthenticated', async () => {
 		mockUnauthenticated();
-		const { status } = await parseResponse(await GET());
+		const { status } = await parseResponse(await GET(makeReq()));
 		expect(status).toBe(403);
 	});
 
@@ -35,9 +41,34 @@ describe('GET /api/admin/content', () => {
 		];
 		mockPrisma.content.findMany.mockResolvedValue(mockContent);
 
-		const { status, body } = await parseResponse(await GET());
+		const { status, body } = await parseResponse(await GET(makeReq()));
 		expect(status).toBe(200);
 		expect(body?.content).toHaveLength(1);
+	});
+
+	it('filters active content when expired=active', async () => {
+		mockAdmin();
+		mockPrisma.content.findMany.mockResolvedValue([]);
+
+		await GET(makeReq({ expired: 'active' }));
+		const whereArg = mockPrisma.content.findMany.mock.calls[0][0]?.where;
+		expect(whereArg).toHaveProperty('OR');
+		expect(whereArg.OR).toEqual(
+			expect.arrayContaining([
+				{ expiresAt: null },
+				expect.objectContaining({ expiresAt: expect.objectContaining({ gt: expect.any(Date) }) }),
+			])
+		);
+	});
+
+	it('filters expired content when expired=expired', async () => {
+		mockAdmin();
+		mockPrisma.content.findMany.mockResolvedValue([]);
+
+		await GET(makeReq({ expired: 'expired' }));
+		const whereArg = mockPrisma.content.findMany.mock.calls[0][0]?.where;
+		expect(whereArg).toHaveProperty('expiresAt');
+		expect(whereArg.expiresAt).toEqual(expect.objectContaining({ lte: expect.any(Date) }));
 	});
 });
 

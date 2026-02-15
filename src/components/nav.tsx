@@ -31,10 +31,11 @@ interface NavProps {
 
 /**
  * Shared classes applied to every icon-button so the hover look also shows
- * while the Radix tooltip is open (data-state="delayed-open" | "instant-open").
+ * while the Radix tooltip is open (data-state="delayed-open" | "instant-open")
+ * or while a dropdown popover is open (aria-expanded="true").
  */
 const ICON_BTN =
-	'h-8 w-8 p-0 data-[state=delayed-open]:bg-accent data-[state=instant-open]:bg-accent data-[state=delayed-open]:text-accent-foreground data-[state=instant-open]:text-accent-foreground';
+	'h-8 w-8 p-0 data-[state=delayed-open]:bg-accent data-[state=instant-open]:bg-accent aria-expanded:bg-accent data-[state=delayed-open]:text-accent-foreground data-[state=instant-open]:text-accent-foreground aria-expanded:text-accent-foreground';
 
 export function Nav({ role, username }: NavProps) {
 	const pathname = usePathname();
@@ -211,16 +212,16 @@ export function Nav({ role, username }: NavProps) {
 					<div className="flex md:hidden items-center gap-1">
 						{iconButtons}
 
-						<DropdownMenu>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<DropdownMenuTrigger asChild>
-										<Button
-											variant="ghost"
-											size="sm"
-											className={cn(ICON_BTN, 'group/menu')}
-											aria-label="Open menu"
-										>
+					<DropdownMenu>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="ghost"
+										size="sm"
+										className={cn(ICON_BTN, 'group/menu')}
+										aria-label="Open menu"
+									>
 											<Menu className="h-5 w-5 transition-transform duration-200 group-hover/menu:scale-110" aria-hidden="true" />
 										</Button>
 									</DropdownMenuTrigger>

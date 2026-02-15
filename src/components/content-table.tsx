@@ -1,9 +1,17 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,7 +19,21 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Link2, Trash2, ShieldCheck, Unlink, Copy, FileCode } from 'lucide-react';
+import {
+	MoreHorizontal,
+	Eye,
+	Link2,
+	Trash2,
+	ShieldCheck,
+	Unlink,
+	Copy,
+	FileCode,
+	Search,
+	ArrowUpDown,
+	ArrowUp,
+	ArrowDown,
+	X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -33,6 +55,9 @@ interface ContentItem {
 		role: string;
 	};
 }
+
+type SortField = 'filename' | 'fileExtension' | 'fileSize' | 'uploadedBy' | 'expiresAt' | 'createdAt';
+type SortDirection = 'asc' | 'desc';
 
 function formatSize(bytes: number): string {
 	if (bytes < 1024) return `${bytes} B`;
@@ -76,7 +101,7 @@ function extColor(ext: string): { bg: string; fg: string; accent: string } {
 /** Renders a small file-type badge that looks like a document icon. */
 function FileExtIcon({ ext }: { ext: string }) {
 	const label = ext.replace(/^\./, '').toUpperCase();
-	const { bg, fg, accent } = extColor(ext);
+	const { bg, accent } = extColor(ext);
 	return (
 		<div className={`relative w-10 h-10 rounded-md ${bg} flex flex-col items-center justify-end overflow-hidden border`}>
 			{/* Folded corner */}
@@ -97,9 +122,23 @@ export function ContentManager() {
 	const [content, setContent] = useState<ContentItem[]>([]);
 	const [loading, setLoading] = useState(true);
 
+	// Filter state
+	const [searchQuery, setSearchQuery] = useState('');
+	const [typeFilter, setTypeFilter] = useState('all');
+	const [statusFilter, setStatusFilter] = useState('all');
+	const [uploaderFilter, setUploaderFilter] = useState('all');
+	const [directoryFilter, setDirectoryFilter] = useState('all');
+
+	// Sort state
+	const [sortField, setSortField] = useState<SortField>('createdAt');
+	const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
 	const fetchContent = useCallback(async () => {
 		try {
-			const res = await fetch('/api/admin/content');
+			const params = new URLSearchParams();
+			if (statusFilter !== 'all') params.set('expired', statusFilter);
+			const query = params.toString();
+			const res = await fetch(`/api/admin/content${query ? `?${query}` : ''}`);
 			const data = await res.json();
 			setContent(data.content || []);
 		} catch {
@@ -107,11 +146,110 @@ export function ContentManager() {
 		} finally {
 			setLoading(false);
 		}
-	}, []);
+	}, [statusFilter]);
 
 	useEffect(() => {
 		fetchContent();
 	}, [fetchContent]);
+
+	// Derive unique values for filter dropdowns
+	const filterOptions = useMemo(() => {
+		const types = [...new Set(content.map(c => c.fileExtension))].sort();
+		const uploaders = [...new Set(content.map(c => c.uploadedBy.username))].sort();
+		const directories = [...new Set(content.map(c => c.directory).filter(Boolean))].sort() as string[];
+		return { types, uploaders, directories };
+	}, [content]);
+
+	// Whether any filter is active (for the clear-all button)
+	const hasActiveFilters = searchQuery !== '' || typeFilter !== 'all' || statusFilter !== 'all' || uploaderFilter !== 'all' || directoryFilter !== 'all';
+
+	function clearFilters() {
+		setSearchQuery('');
+		setTypeFilter('all');
+		setStatusFilter('all');
+		setUploaderFilter('all');
+		setDirectoryFilter('all');
+	}
+
+	// Apply client-side filters and sorting
+	const filteredContent = useMemo(() => {
+		let result = content;
+
+		// Text search
+		if (searchQuery) {
+			const q = searchQuery.toLowerCase();
+			result = result.filter(item =>
+				item.filename.toLowerCase().includes(q) ||
+				item.originalFilename.toLowerCase().includes(q)
+			);
+		}
+
+		// Type filter
+		if (typeFilter !== 'all') {
+			result = result.filter(item => item.fileExtension === typeFilter);
+		}
+
+		// Uploader filter
+		if (uploaderFilter !== 'all') {
+			result = result.filter(item => item.uploadedBy.username === uploaderFilter);
+		}
+
+		// Directory filter
+		if (directoryFilter !== 'all') {
+			if (directoryFilter === '_none') {
+				result = result.filter(item => !item.directory);
+			} else {
+				result = result.filter(item => item.directory === directoryFilter);
+			}
+		}
+
+		// Sort
+		result = [...result].sort((a, b) => {
+			let cmp = 0;
+			switch (sortField) {
+				case 'filename':
+					cmp = a.filename.localeCompare(b.filename);
+					break;
+				case 'fileExtension':
+					cmp = a.fileExtension.localeCompare(b.fileExtension);
+					break;
+				case 'fileSize':
+					cmp = a.fileSize - b.fileSize;
+					break;
+				case 'uploadedBy':
+					cmp = a.uploadedBy.username.localeCompare(b.uploadedBy.username);
+					break;
+				case 'expiresAt': {
+					const aExp = a.expiresAt ? new Date(a.expiresAt).getTime() : Infinity;
+					const bExp = b.expiresAt ? new Date(b.expiresAt).getTime() : Infinity;
+					cmp = aExp - bExp;
+					break;
+				}
+				case 'createdAt':
+					cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+					break;
+			}
+			return sortDirection === 'asc' ? cmp : -cmp;
+		});
+
+		return result;
+	}, [content, searchQuery, typeFilter, uploaderFilter, directoryFilter, sortField, sortDirection]);
+
+	function handleSort(field: SortField) {
+		if (sortField === field) {
+			setSortDirection(d => d === 'asc' ? 'desc' : 'asc');
+		} else {
+			setSortField(field);
+			setSortDirection('asc');
+		}
+	}
+
+	function SortIcon({ field }: { field: SortField }) {
+		if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-40" />;
+		return sortDirection === 'asc'
+			? <ArrowUp className="ml-1 h-3 w-3" />
+			: <ArrowDown className="ml-1 h-3 w-3" />;
+	}
 
 	async function handleDelete(item: ContentItem) {
 		if (!confirm(`Delete "${item.filename}"? This cannot be undone.`)) return;
@@ -219,26 +357,136 @@ export function ContentManager() {
 
 	return (
 		<div className="space-y-4">
-			<p className="text-muted-foreground" aria-live="polite">{content.length} item(s)</p>
+			{/* Filter toolbar */}
+			<div className="flex flex-wrap items-end gap-3">
+				{/* Search */}
+				<div className="flex-1 min-w-[200px] max-w-sm">
+					<div className="relative">
+						<Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
+						<Input
+							placeholder="Search filenames..."
+							value={searchQuery}
+							onChange={e => setSearchQuery(e.target.value)}
+							className="pl-9"
+							aria-label="Search filenames"
+						/>
+					</div>
+				</div>
 
+				{/* File type */}
+				<Select value={typeFilter} onValueChange={setTypeFilter}>
+					<SelectTrigger aria-label="Filter by file type">
+						<SelectValue placeholder="File type" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All types</SelectItem>
+						{filterOptions.types.map(ext => (
+							<SelectItem key={ext} value={ext}>{ext}</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+
+				{/* Status (expired filter - backed by API) */}
+				<Select value={statusFilter} onValueChange={setStatusFilter}>
+					<SelectTrigger aria-label="Filter by expiry status">
+						<SelectValue placeholder="Status" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All statuses</SelectItem>
+						<SelectItem value="active">Active</SelectItem>
+						<SelectItem value="expired">Expired</SelectItem>
+					</SelectContent>
+				</Select>
+
+				{/* Uploaded by */}
+				{filterOptions.uploaders.length > 1 && (
+					<Select value={uploaderFilter} onValueChange={setUploaderFilter}>
+						<SelectTrigger aria-label="Filter by uploader">
+							<SelectValue placeholder="Uploaded by" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All uploaders</SelectItem>
+							{filterOptions.uploaders.map(name => (
+								<SelectItem key={name} value={name}>{name}</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				)}
+
+				{/* Directory */}
+				{filterOptions.directories.length > 0 && (
+					<Select value={directoryFilter} onValueChange={setDirectoryFilter}>
+						<SelectTrigger aria-label="Filter by directory">
+							<SelectValue placeholder="Directory" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="all">All directories</SelectItem>
+							<SelectItem value="_none">No directory</SelectItem>
+							{filterOptions.directories.map(dir => (
+								<SelectItem key={dir} value={dir}>{dir}</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				)}
+
+				{/* Clear filters */}
+				{hasActiveFilters && (
+					<Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 gap-1.5 text-muted-foreground">
+						<X className="h-3.5 w-3.5" />
+						Clear
+					</Button>
+				)}
+			</div>
+
+			<p className="text-muted-foreground" aria-live="polite">
+				{filteredContent.length === content.length
+					? `${content.length} item(s)`
+					: `${filteredContent.length} of ${content.length} item(s)`}
+			</p>
+
+			{/* Table */}
 			<div className="rounded-md border overflow-x-auto" role="region" aria-label="Content table" tabIndex={0}>
 				<Table aria-label="Uploaded content">
 					<TableHeader>
 						<TableRow>
 							<TableHead className="w-10"><span className="sr-only">Preview</span></TableHead>
-							<TableHead>Filename</TableHead>
+							<TableHead>
+								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('filename')}>
+									Filename <SortIcon field="filename" />
+								</button>
+							</TableHead>
 							<TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
-							<TableHead>Type</TableHead>
-							<TableHead>Size</TableHead>
-							<TableHead>Uploaded By</TableHead>
-							<TableHead>Expiry</TableHead>
-							<TableHead>Created</TableHead>
+							<TableHead>
+								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('fileExtension')}>
+									Type <SortIcon field="fileExtension" />
+								</button>
+							</TableHead>
+							<TableHead>
+								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('fileSize')}>
+									Size <SortIcon field="fileSize" />
+								</button>
+							</TableHead>
+							<TableHead>
+								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('uploadedBy')}>
+									Uploaded By <SortIcon field="uploadedBy" />
+								</button>
+							</TableHead>
+							<TableHead>
+								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('expiresAt')}>
+									Expiry <SortIcon field="expiresAt" />
+								</button>
+							</TableHead>
+							<TableHead>
+								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('createdAt')}>
+									Created <SortIcon field="createdAt" />
+								</button>
+							</TableHead>
 							<TableHead>Short URLs</TableHead>
 							<TableHead>Directory</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{content.map(item => (
+						{filteredContent.map(item => (
 							<TableRow key={item.id} className={isExpired(item.expiresAt) ? 'opacity-50' : ''}>
 								{/* Preview */}
 								<TableCell>
@@ -362,10 +610,12 @@ export function ContentManager() {
 								</TableCell>
 							</TableRow>
 						))}
-						{content.length === 0 && (
+						{filteredContent.length === 0 && (
 							<TableRow>
 								<TableCell colSpan={10} className="text-center text-muted-foreground py-8">
-									No content uploaded yet.
+									{content.length === 0
+										? 'No content uploaded yet.'
+										: 'No content matches the current filters.'}
 								</TableCell>
 							</TableRow>
 						)}
