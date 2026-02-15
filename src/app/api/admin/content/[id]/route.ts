@@ -16,7 +16,17 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 	const content = await prisma.content.findUnique({
 		where: { id },
-		include: {
+		select: {
+			id: true,
+			filename: true,
+			originalFilename: true,
+			directory: true,
+			fileSize: true,
+			fileExtension: true,
+			mimeType: true,
+			expiresAt: true,
+			createdAt: true,
+			previewPath: true,
 			uploadedBy: { select: { id: true, username: true, role: true } },
 			shortSlugs: { select: { slug: true } },
 		},
@@ -26,7 +36,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 		return NextResponse.json({ error: 'Content not found' }, { status: 404 });
 	}
 
-	return NextResponse.json({ content });
+	// SECURITY: Strip internal filesystem paths
+	const { previewPath, ...safe } = content;
+	return NextResponse.json({ content: { ...safe, hasPreview: !!previewPath } });
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -85,13 +97,30 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 			});
 		}
 
-		// Return updated content with slugs
+		// Return updated content with slugs (without internal paths)
 		const updated = await prisma.content.findUnique({
 			where: { id },
-			include: { shortSlugs: { select: { slug: true } } },
+			select: {
+				id: true,
+				filename: true,
+				originalFilename: true,
+				directory: true,
+				fileSize: true,
+				fileExtension: true,
+				mimeType: true,
+				expiresAt: true,
+				createdAt: true,
+				previewPath: true,
+				shortSlugs: { select: { slug: true } },
+			},
 		});
 
-		return NextResponse.json({ content: updated });
+		if (!updated) {
+			return NextResponse.json({ error: 'Content not found' }, { status: 404 });
+		}
+
+		const { previewPath: pp, ...safeUpdated } = updated;
+		return NextResponse.json({ content: { ...safeUpdated, hasPreview: !!pp } });
 	} catch (error) {
 		console.error('Update content error:', error);
 		return NextResponse.json({ error: 'Failed to update content' }, { status: 500 });

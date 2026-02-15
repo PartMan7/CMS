@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -46,7 +40,7 @@ interface ContentItem {
 	fileSize: number;
 	fileExtension: string;
 	mimeType: string;
-	previewPath: string | null;
+	hasPreview: boolean;
 	expiresAt: string | null;
 	createdAt: string;
 	uploadedBy: {
@@ -84,16 +78,19 @@ function extColor(ext: string): { bg: string; fg: string; accent: string } {
 	if (['xls', 'xlsx', 'ods', 'csv'].includes(e)) return { bg: 'bg-ctp-green/10', fg: 'text-ctp-green', accent: 'bg-ctp-green' };
 	if (['ppt', 'pptx', 'odp'].includes(e)) return { bg: 'bg-ctp-peach/10', fg: 'text-ctp-peach', accent: 'bg-ctp-peach' };
 	// Archives
-	if (['zip', 'tar', 'gz', 'bz2', '7z', 'rar'].includes(e)) return { bg: 'bg-ctp-yellow/10', fg: 'text-ctp-yellow', accent: 'bg-ctp-yellow' };
+	if (['zip', 'tar', 'gz', 'bz2', '7z', 'rar'].includes(e))
+		return { bg: 'bg-ctp-yellow/10', fg: 'text-ctp-yellow', accent: 'bg-ctp-yellow' };
 	// Media
 	if (['mp3', 'wav', 'ogg', 'flv'].includes(e)) return { bg: 'bg-ctp-mauve/10', fg: 'text-ctp-mauve', accent: 'bg-ctp-mauve' };
 	if (['mp4', 'webm', 'avi', 'mov', 'mkv'].includes(e)) return { bg: 'bg-ctp-pink/10', fg: 'text-ctp-pink', accent: 'bg-ctp-pink' };
 	// Images (fallback for images without preview)
-	if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'ico', 'tiff', 'avif'].includes(e)) return { bg: 'bg-ctp-flamingo/10', fg: 'text-ctp-flamingo', accent: 'bg-ctp-flamingo' };
+	if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'ico', 'tiff', 'avif'].includes(e))
+		return { bg: 'bg-ctp-flamingo/10', fg: 'text-ctp-flamingo', accent: 'bg-ctp-flamingo' };
 	// Data
 	if (['json', 'xml', 'yaml', 'yml'].includes(e)) return { bg: 'bg-ctp-teal/10', fg: 'text-ctp-teal', accent: 'bg-ctp-teal' };
 	// Fonts
-	if (['woff', 'woff2', 'ttf', 'otf', 'eot'].includes(e)) return { bg: 'bg-ctp-lavender/10', fg: 'text-ctp-lavender', accent: 'bg-ctp-lavender' };
+	if (['woff', 'woff2', 'ttf', 'otf', 'eot'].includes(e))
+		return { bg: 'bg-ctp-lavender/10', fg: 'text-ctp-lavender', accent: 'bg-ctp-lavender' };
 	// Fallback
 	return { bg: 'bg-ctp-overlay0/10', fg: 'text-ctp-overlay0', accent: 'bg-ctp-overlay0' };
 }
@@ -110,9 +107,7 @@ function FileExtIcon({ ext }: { ext: string }) {
 			</div>
 			{/* Extension label pill */}
 			<div className={`${accent} rounded-sm px-1 py-[1px] mb-1.5`}>
-				<span className="text-[8px] font-extrabold leading-none text-white tracking-wide">
-					{label}
-				</span>
+				<span className="text-[8px] font-extrabold leading-none text-white tracking-wide">{label}</span>
 			</div>
 		</div>
 	);
@@ -161,7 +156,8 @@ export function ContentManager() {
 	}, [content]);
 
 	// Whether any filter is active (for the clear-all button)
-	const hasActiveFilters = searchQuery !== '' || typeFilter !== 'all' || statusFilter !== 'all' || uploaderFilter !== 'all' || directoryFilter !== 'all';
+	const hasActiveFilters =
+		searchQuery !== '' || typeFilter !== 'all' || statusFilter !== 'all' || uploaderFilter !== 'all' || directoryFilter !== 'all';
 
 	function clearFilters() {
 		setSearchQuery('');
@@ -178,10 +174,7 @@ export function ContentManager() {
 		// Text search
 		if (searchQuery) {
 			const q = searchQuery.toLowerCase();
-			result = result.filter(item =>
-				item.filename.toLowerCase().includes(q) ||
-				item.originalFilename.toLowerCase().includes(q)
-			);
+			result = result.filter(item => item.filename.toLowerCase().includes(q) || item.originalFilename.toLowerCase().includes(q));
 		}
 
 		// Type filter
@@ -237,7 +230,7 @@ export function ContentManager() {
 
 	function handleSort(field: SortField) {
 		if (sortField === field) {
-			setSortDirection(d => d === 'asc' ? 'desc' : 'asc');
+			setSortDirection(d => (d === 'asc' ? 'desc' : 'asc'));
 		} else {
 			setSortField(field);
 			setSortDirection('asc');
@@ -246,9 +239,7 @@ export function ContentManager() {
 
 	function SortIcon({ field }: { field: SortField }) {
 		if (sortField !== field) return <ArrowUpDown className="ml-1 h-3 w-3 opacity-40" />;
-		return sortDirection === 'asc'
-			? <ArrowUp className="ml-1 h-3 w-3" />
-			: <ArrowDown className="ml-1 h-3 w-3" />;
+		return sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />;
 	}
 
 	async function handleDelete(item: ContentItem) {
@@ -331,9 +322,7 @@ export function ContentManager() {
 
 	/** Copy the best URL for an item (first short slug, or /c fallback) to clipboard. */
 	function copyUrl(item: ContentItem) {
-		const path = item.shortSlugs.length > 0
-			? `/s/${item.shortSlugs[0].slug}`
-			: `/c/${item.id}`;
+		const path = item.shortSlugs.length > 0 ? `/s/${item.shortSlugs[0].slug}` : `/c/${item.id}`;
 		const full = `${window.location.origin}${path}`;
 		navigator.clipboard.writeText(full).then(
 			() => toast.success('URL copied'),
@@ -343,9 +332,7 @@ export function ContentManager() {
 
 	/** Copy the raw / embed URL for an item to clipboard. */
 	function copyRawUrl(item: ContentItem) {
-		const path = item.shortSlugs.length > 0
-			? `/e/${item.shortSlugs[0].slug}`
-			: `/r/${item.id}`;
+		const path = item.shortSlugs.length > 0 ? `/e/${item.shortSlugs[0].slug}` : `/r/${item.id}`;
 		const full = `${window.location.origin}${path}`;
 		navigator.clipboard.writeText(full).then(
 			() => toast.success('Raw URL copied'),
@@ -353,7 +340,12 @@ export function ContentManager() {
 		);
 	}
 
-	if (loading) return <p className="text-muted-foreground" role="status" aria-live="polite">Loading content...</p>;
+	if (loading)
+		return (
+			<p className="text-muted-foreground" role="status" aria-live="polite">
+				Loading content...
+			</p>
+		);
 
 	return (
 		<div className="space-y-4">
@@ -381,7 +373,9 @@ export function ContentManager() {
 					<SelectContent>
 						<SelectItem value="all">All types</SelectItem>
 						{filterOptions.types.map(ext => (
-							<SelectItem key={ext} value={ext}>{ext}</SelectItem>
+							<SelectItem key={ext} value={ext}>
+								{ext}
+							</SelectItem>
 						))}
 					</SelectContent>
 				</Select>
@@ -407,7 +401,9 @@ export function ContentManager() {
 						<SelectContent>
 							<SelectItem value="all">All uploaders</SelectItem>
 							{filterOptions.uploaders.map(name => (
-								<SelectItem key={name} value={name}>{name}</SelectItem>
+								<SelectItem key={name} value={name}>
+									{name}
+								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
@@ -423,7 +419,9 @@ export function ContentManager() {
 							<SelectItem value="all">All directories</SelectItem>
 							<SelectItem value="_none">No directory</SelectItem>
 							{filterOptions.directories.map(dir => (
-								<SelectItem key={dir} value={dir}>{dir}</SelectItem>
+								<SelectItem key={dir} value={dir}>
+									{dir}
+								</SelectItem>
 							))}
 						</SelectContent>
 					</Select>
@@ -449,35 +447,63 @@ export function ContentManager() {
 				<Table aria-label="Uploaded content">
 					<TableHeader>
 						<TableRow>
-							<TableHead className="w-10"><span className="sr-only">Preview</span></TableHead>
+							<TableHead className="w-10">
+								<span className="sr-only">Preview</span>
+							</TableHead>
 							<TableHead>
-								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('filename')}>
+								<button
+									type="button"
+									className="flex items-center hover:text-foreground transition-colors"
+									onClick={() => handleSort('filename')}
+								>
 									Filename <SortIcon field="filename" />
 								</button>
 							</TableHead>
-							<TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
+							<TableHead className="w-12">
+								<span className="sr-only">Actions</span>
+							</TableHead>
 							<TableHead>
-								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('fileExtension')}>
+								<button
+									type="button"
+									className="flex items-center hover:text-foreground transition-colors"
+									onClick={() => handleSort('fileExtension')}
+								>
 									Type <SortIcon field="fileExtension" />
 								</button>
 							</TableHead>
 							<TableHead>
-								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('fileSize')}>
+								<button
+									type="button"
+									className="flex items-center hover:text-foreground transition-colors"
+									onClick={() => handleSort('fileSize')}
+								>
 									Size <SortIcon field="fileSize" />
 								</button>
 							</TableHead>
 							<TableHead>
-								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('uploadedBy')}>
+								<button
+									type="button"
+									className="flex items-center hover:text-foreground transition-colors"
+									onClick={() => handleSort('uploadedBy')}
+								>
 									Uploaded By <SortIcon field="uploadedBy" />
 								</button>
 							</TableHead>
 							<TableHead>
-								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('expiresAt')}>
+								<button
+									type="button"
+									className="flex items-center hover:text-foreground transition-colors"
+									onClick={() => handleSort('expiresAt')}
+								>
 									Expiry <SortIcon field="expiresAt" />
 								</button>
 							</TableHead>
 							<TableHead>
-								<button type="button" className="flex items-center hover:text-foreground transition-colors" onClick={() => handleSort('createdAt')}>
+								<button
+									type="button"
+									className="flex items-center hover:text-foreground transition-colors"
+									onClick={() => handleSort('createdAt')}
+								>
 									Created <SortIcon field="createdAt" />
 								</button>
 							</TableHead>
@@ -490,7 +516,7 @@ export function ContentManager() {
 							<TableRow key={item.id} className={isExpired(item.expiresAt) ? 'opacity-50' : ''}>
 								{/* Preview */}
 								<TableCell>
-									{isImage(item.mimeType) && item.previewPath ? (
+									{isImage(item.mimeType) && item.hasPreview ? (
 										/* eslint-disable-next-line @next/next/no-img-element */
 										<img
 											src={`/api/preview/${item.id}`}
@@ -504,7 +530,10 @@ export function ContentManager() {
 								</TableCell>
 								{/* Filename */}
 								<TableCell className="font-medium max-w-48 truncate">
-									<Link href={`/c/${item.id}`} className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background rounded-sm">
+									<Link
+										href={`/c/${item.id}`}
+										className="text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background rounded-sm"
+									>
 										{item.filename}
 									</Link>
 								</TableCell>
@@ -536,10 +565,7 @@ export function ContentManager() {
 											</DropdownMenuItem>
 											{item.shortSlugs.length > 0 &&
 												item.shortSlugs.map(({ slug }) => (
-													<DropdownMenuItem
-														key={slug}
-														onClick={() => handleRemoveSlug(item, slug)}
-													>
+													<DropdownMenuItem key={slug} onClick={() => handleRemoveSlug(item, slug)}>
 														<Unlink className="mr-2 h-4 w-4" />
 														Remove /s/{slug}
 													</DropdownMenuItem>
@@ -551,10 +577,7 @@ export function ContentManager() {
 												</DropdownMenuItem>
 											)}
 											<DropdownMenuSeparator />
-											<DropdownMenuItem
-												variant="destructive"
-												onClick={() => handleDelete(item)}
-											>
+											<DropdownMenuItem variant="destructive" onClick={() => handleDelete(item)}>
 												<Trash2 className="mr-2 h-4 w-4" />
 												Delete
 											</DropdownMenuItem>
@@ -613,9 +636,7 @@ export function ContentManager() {
 						{filteredContent.length === 0 && (
 							<TableRow>
 								<TableCell colSpan={10} className="text-center text-muted-foreground py-8">
-									{content.length === 0
-										? 'No content uploaded yet.'
-										: 'No content matches the current filters.'}
+									{content.length === 0 ? 'No content uploaded yet.' : 'No content matches the current filters.'}
 								</TableCell>
 							</TableRow>
 						)}

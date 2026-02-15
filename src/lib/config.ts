@@ -120,3 +120,12 @@ export function getBaseUrl(): string {
 
 // --- Auth ---
 export const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || '';
+
+// SECURITY: Fail loudly in production if AUTH_SECRET is missing or weak.
+// An empty or short secret makes JWT tokens trivially forgeable.
+if (process.env.NODE_ENV === 'production' && AUTH_SECRET.length < 32) {
+	throw new Error(
+		'AUTH_SECRET (or NEXTAUTH_SECRET) must be set and at least 32 characters in production. ' +
+			'Generate one with: openssl rand -base64 32'
+	);
+}

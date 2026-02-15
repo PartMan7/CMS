@@ -47,8 +47,8 @@ function DropdownMenuContent({
 				)}
 				{...props}
 			>
-				{children}
-				<DropdownMenuPrimitive.Arrow className="bg-popover fill-popover z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]" />
+				<div className="relative z-1">{children}</div>
+				<DropdownMenuPrimitive.Arrow className="bg-popover fill-popover -z-10 size-2.5 translate-y-[-50%] rotate-45 rounded-tl-[2px] border-b border-r" />
 			</DropdownMenuPrimitive.Content>
 		</DropdownMenuPrimitive.Portal>
 	);

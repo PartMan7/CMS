@@ -25,7 +25,13 @@ export const authConfig: NextAuthConfig = {
 			const pathname = nextUrl.pathname;
 
 			// Public paths (cron is protected by its own secret header check)
-			if (pathname.startsWith('/login') || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron')) {
+			if (
+				pathname.startsWith('/login') ||
+				pathname.startsWith('/invite') ||
+				pathname.startsWith('/api/auth') ||
+				pathname.startsWith('/api/invite') ||
+				pathname.startsWith('/api/cron')
+			) {
 				return true;
 			}
 

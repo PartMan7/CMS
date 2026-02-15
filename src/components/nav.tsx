@@ -7,11 +7,7 @@ import { useTheme } from 'next-themes';
 import { signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-	Tooltip,
-	TooltipTrigger,
-	TooltipContent,
-} from '@/components/ui/tooltip';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -65,9 +61,7 @@ export function Nav({ role, username }: NavProps) {
 	}
 
 	function openShortcuts() {
-		window.dispatchEvent(
-			new KeyboardEvent('keydown', { key: '/', ctrlKey: true, bubbles: true })
-		);
+		window.dispatchEvent(new KeyboardEvent('keydown', { key: '/', ctrlKey: true, bubbles: true }));
 	}
 
 	const roleBadgeColor: Record<string, string> = {
@@ -88,36 +82,42 @@ export function Nav({ role, username }: NavProps) {
 				<Tooltip>
 					<TooltipTrigger asChild>
 						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								size="sm"
-								className={cn(ICON_BTN, 'group/accent')}
-								aria-label="Choose accent colour"
-							>
+							<Button variant="ghost" size="sm" className={cn(ICON_BTN, 'group/accent')} aria-label="Choose accent colour">
 								<Palette className="h-4 w-4 transition-transform duration-200 group-hover/accent:rotate-30" aria-hidden="true" />
 							</Button>
 						</DropdownMenuTrigger>
 					</TooltipTrigger>
 					<TooltipContent>Accent colour</TooltipContent>
 				</Tooltip>
-				<DropdownMenuContent
-					align="end"
-					className="grid grid-cols-7 gap-1 p-2 w-auto min-w-0"
-					aria-label="Accent colour options"
-				>
-					{ACCENT_NAMES.map(name => (
-						<button
-							key={name}
-							onClick={() => setAccent(name)}
-							aria-label={`${ACCENTS[name].label} accent${accent === name ? ' (selected)' : ''}`}
-							aria-pressed={accent === name}
-							className={cn(
-								'w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-								accent === name && 'ring-2 ring-foreground ring-offset-2 ring-offset-background'
-							)}
-							style={{ backgroundColor: accentHex(name) }}
-						/>
-					))}
+				<DropdownMenuContent align="end" className="flex flex-col gap-1.5 p-2 w-auto min-w-0" aria-label="Accent colour options">
+					<div className="grid grid-cols-7 gap-1">
+						{ACCENT_NAMES.map(name => (
+							<button
+								key={name}
+								onClick={() => setAccent(name)}
+								aria-label={`${ACCENTS[name].label} accent${accent === name ? ' (selected)' : ''}`}
+								aria-pressed={accent === name}
+								className={cn(
+									'w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+									accent === name && 'ring-2 ring-foreground ring-offset-2 ring-offset-background'
+								)}
+								style={{ backgroundColor: accentHex(name) }}
+							/>
+						))}
+					</div>
+					<span className="text-[10px] text-muted-foreground text-center">
+						Colours from{' '}
+						<a
+							href={mounted && resolvedTheme === 'dark'
+								? 'https://github.com/PartMan7/catppuccin'
+								: 'https://github.com/catppuccin/catppuccin#latte'}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="underline hover:text-foreground transition-colors"
+						>
+							Catppuccin {mounted && resolvedTheme === 'dark' ? 'Noir' : 'Latte'}
+						</a>
+					</span>
 				</DropdownMenuContent>
 			</DropdownMenu>
 
@@ -131,17 +131,17 @@ export function Nav({ role, username }: NavProps) {
 						onClick={toggleTheme}
 						aria-label={mounted ? `Switch to ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode` : 'Toggle theme'}
 					>
-						<Sun className="h-4 w-4 rotate-0 scale-100 transition-transform duration-300 group-hover/theme:rotate-45 dark:-rotate-90 dark:scale-0" aria-hidden="true" />
-						<Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100 dark:group-hover/theme:-rotate-12" aria-hidden="true" />
+						<Sun
+							className="h-4 w-4 rotate-0 scale-100 transition-transform duration-300 group-hover/theme:rotate-45 dark:-rotate-90 dark:scale-0"
+							aria-hidden="true"
+						/>
+						<Moon
+							className="absolute h-4 w-4 rotate-90 scale-0 transition-transform duration-300 dark:rotate-0 dark:scale-100 dark:group-hover/theme:-rotate-12"
+							aria-hidden="true"
+						/>
 					</Button>
 				</TooltipTrigger>
-				<TooltipContent>
-					{mounted
-						? resolvedTheme === 'dark'
-							? 'Light mode'
-							: 'Dark mode'
-						: 'Toggle theme'}
-				</TooltipContent>
+				<TooltipContent>{mounted ? (resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode') : 'Toggle theme'}</TooltipContent>
 			</Tooltip>
 
 			{/* Keyboard shortcuts hint */}
@@ -184,9 +184,7 @@ export function Nav({ role, username }: NavProps) {
 										aria-current={isCurrent ? 'page' : undefined}
 										className={cn(
 											'px-3 py-1.5 text-sm rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-											isCurrent
-												? 'bg-primary text-primary-foreground'
-												: 'text-muted-foreground hover:text-foreground hover:bg-muted'
+											isCurrent ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
 										)}
 									>
 										{link.label}
@@ -212,16 +210,11 @@ export function Nav({ role, username }: NavProps) {
 					<div className="flex md:hidden items-center gap-1">
 						{iconButtons}
 
-					<DropdownMenu>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<DropdownMenuTrigger asChild>
-									<Button
-										variant="ghost"
-										size="sm"
-										className={cn(ICON_BTN, 'group/menu')}
-										aria-label="Open menu"
-									>
+						<DropdownMenu>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<DropdownMenuTrigger asChild>
+										<Button variant="ghost" size="sm" className={cn(ICON_BTN, 'group/menu')} aria-label="Open menu">
 											<Menu className="h-5 w-5 transition-transform duration-200 group-hover/menu:scale-110" aria-hidden="true" />
 										</Button>
 									</DropdownMenuTrigger>
@@ -255,9 +248,7 @@ export function Nav({ role, username }: NavProps) {
 								})}
 
 								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>
-									Sign Out
-								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>Sign Out</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>

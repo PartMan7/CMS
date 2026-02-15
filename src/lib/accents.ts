@@ -10,20 +10,20 @@ export interface AccentDef {
 }
 
 export const ACCENTS = {
-	lavender:  { label: 'Lavender',   light: '#7287fd', dark: '#b4befe' },
-	mauve:     { label: 'Mauve',      light: '#8839ef', dark: '#cba6f7' },
-	pink:      { label: 'Pink',       light: '#ea76cb', dark: '#f5c2e7' },
-	flamingo:  { label: 'Flamingo',   light: '#dd7878', dark: '#f2cdcd' },
-	rosewater: { label: 'Rosewater',  light: '#dc8a78', dark: '#f5e0dc' },
-	maroon:    { label: 'Maroon',     light: '#e64553', dark: '#eba0ac' },
-	red:       { label: 'Red',        light: '#d20f39', dark: '#f38ba8' },
-	peach:     { label: 'Peach',      light: '#fe640b', dark: '#fab387' },
-	yellow:    { label: 'Yellow',     light: '#df8e1d', dark: '#f9e2af' },
-	green:     { label: 'Green',      light: '#40a02b', dark: '#a6e3a1' },
-	teal:      { label: 'Teal',       light: '#179299', dark: '#94e2d5' },
-	sky:       { label: 'Sky',        light: '#04a5e5', dark: '#89dceb' },
-	sapphire:  { label: 'Sapphire',   light: '#209fb5', dark: '#74c7ec' },
-	blue:      { label: 'Blue',       light: '#1e66f5', dark: '#89b4fa' },
+	rosewater: { label: 'Rosewater', light: '#dc8a78', dark: '#f5e0dc' },
+	flamingo: { label: 'Flamingo', light: '#dd7878', dark: '#f2cdcd' },
+	pink: { label: 'Pink', light: '#ea76cb', dark: '#f5c2e7' },
+	mauve: { label: 'Mauve', light: '#8839ef', dark: '#cba6f7' },
+	red: { label: 'Red', light: '#d20f39', dark: '#f38ba8' },
+	maroon: { label: 'Maroon', light: '#e64553', dark: '#eba0ac' },
+	peach: { label: 'Peach', light: '#fe640b', dark: '#fab387' },
+	yellow: { label: 'Yellow', light: '#df8e1d', dark: '#f9e2af' },
+	green: { label: 'Green', light: '#40a02b', dark: '#a6e3a1' },
+	teal: { label: 'Teal', light: '#179299', dark: '#94e2d5' },
+	sky: { label: 'Sky', light: '#04a5e5', dark: '#89dceb' },
+	sapphire: { label: 'Sapphire', light: '#209fb5', dark: '#74c7ec' },
+	blue: { label: 'Blue', light: '#1e66f5', dark: '#89b4fa' },
+	lavender: { label: 'Lavender', light: '#7287fd', dark: '#b4befe' },
 } as const satisfies Record<string, AccentDef>;
 
 export type AccentName = keyof typeof ACCENTS;

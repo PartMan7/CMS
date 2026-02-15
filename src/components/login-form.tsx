@@ -10,10 +10,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RequiredMark } from '@/components/required-mark';
 
+/**
+ * SECURITY: Only allow relative, same-origin redirects after login.
+ * Blocks open-redirect attacks via crafted callbackUrl query params
+ * (e.g. /login?callbackUrl=https://evil-site.com).
+ */
+function isSafeRedirect(url: string | null): boolean {
+	if (!url) return false;
+	// Must start with a single slash and not contain protocol-like patterns
+	return url.startsWith('/') && !url.startsWith('//') && !url.includes(':');
+}
+
 export function LoginForm() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+	const raw = searchParams.get('callbackUrl');
+	const callbackUrl = isSafeRedirect(raw) ? raw! : '/dashboard';
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 
@@ -48,9 +60,9 @@ export function LoginForm() {
 
 	return (
 		<div className="min-h-screen flex items-center justify-center p-4">
-		<Card className="w-full max-w-md border-primary/25">
-			<CardHeader className="text-center">
-				<CardTitle className="text-2xl text-primary">CMS Login</CardTitle>
+			<Card className="w-full max-w-md border-primary/25">
+				<CardHeader className="text-center">
+					<CardTitle className="text-2xl text-primary">CMS Login</CardTitle>
 					<CardDescription>Sign in to cms.partman.dev</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -63,11 +75,25 @@ export function LoginForm() {
 							)}
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="username">Username<RequiredMark /></Label>
-							<Input id="username" name="username" type="text" required autoComplete="username" placeholder="Enter your username" aria-required="true" />
+							<Label htmlFor="username">
+								Username
+								<RequiredMark />
+							</Label>
+							<Input
+								id="username"
+								name="username"
+								type="text"
+								required
+								autoComplete="username"
+								placeholder="Enter your username"
+								aria-required="true"
+							/>
 						</div>
 						<div className="space-y-2">
-							<Label htmlFor="password">Password<RequiredMark /></Label>
+							<Label htmlFor="password">
+								Password
+								<RequiredMark />
+							</Label>
 							<Input
 								id="password"
 								name="password"

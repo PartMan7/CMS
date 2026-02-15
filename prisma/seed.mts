@@ -17,7 +17,13 @@ const adapter = new PrismaBetterSqlite3({ url: resolveDbUrl() });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-	const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'admin123';
+	const adminPassword = process.env.INITIAL_ADMIN_PASSWORD;
+	if (!adminPassword) {
+		throw new Error(
+			'INITIAL_ADMIN_PASSWORD environment variable is required. ' +
+				'Set it to a strong password before running the seed.',
+		);
+	}
 
 	const admin = await prisma.user.upsert({
 		where: { username: 'admin' },
@@ -48,8 +54,8 @@ async function main() {
 	}
 
 	console.log('\nSeed completed successfully.');
-	console.log(`Default admin credentials: username=admin, password=${adminPassword}`);
-	console.log('IMPORTANT: Change the admin password after first login if using the default.');
+	console.log('Admin user ready: username=admin');
+	console.log('IMPORTANT: Change the admin password after first login.');
 }
 
 main()

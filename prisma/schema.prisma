@@ -7,13 +7,24 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(cuid())
-  username     String    @unique
+  id           String        @id @default(cuid())
+  username     String        @unique
   passwordHash String
-  role         String    @default("guest") // "admin" | "uploader" | "guest"
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  role         String        @default("guest") // "admin" | "uploader" | "guest"
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
   content      Content[]
+  inviteTokens InviteToken[]
+}
+
+model InviteToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 }
 
 model Content {

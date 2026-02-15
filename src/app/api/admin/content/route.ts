@@ -14,17 +14,24 @@ export async function GET(request: NextRequest) {
 
 	const where: Prisma.ContentWhereInput = {};
 	if (expiredFilter === 'active') {
-		where.OR = [
-			{ expiresAt: null },
-			{ expiresAt: { gt: new Date() } },
-		];
+		where.OR = [{ expiresAt: null }, { expiresAt: { gt: new Date() } }];
 	} else if (expiredFilter === 'expired') {
 		where.expiresAt = { lte: new Date() };
 	}
 
 	const content = await prisma.content.findMany({
 		where,
-		include: {
+		select: {
+			id: true,
+			filename: true,
+			originalFilename: true,
+			directory: true,
+			fileSize: true,
+			fileExtension: true,
+			mimeType: true,
+			expiresAt: true,
+			createdAt: true,
+			previewPath: true, // used only to derive hasPreview below
 			uploadedBy: {
 				select: { id: true, username: true, role: true },
 			},
@@ -35,5 +42,11 @@ export async function GET(request: NextRequest) {
 		orderBy: { createdAt: 'desc' },
 	});
 
-	return NextResponse.json({ content });
+	// SECURITY: Strip internal filesystem paths; expose only a boolean preview flag
+	const safeContent = content.map(({ previewPath, ...rest }) => ({
+		...rest,
+		hasPreview: !!previewPath,
+	}));
+
+	return NextResponse.json({ content: safeContent });
 }

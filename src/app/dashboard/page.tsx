@@ -92,36 +92,38 @@ export default async function DashboardPage() {
 						</Card>
 					)}
 
-					{/* Quick Actions */}
-					<Card>
-						<CardHeader>
-							<CardTitle>Quick Actions</CardTitle>
-							<CardDescription>Common tasks</CardDescription>
-						</CardHeader>
-						<CardContent className="flex flex-col gap-3">
-							{canUpload(role) && (
-								<Link href="/upload">
-									<Button className="w-full" variant="outline">
-										Upload Content
-									</Button>
-								</Link>
-							)}
-							{isAdmin(role) && (
-								<>
-									<Link href="/admin/users">
+					{/* Quick Actions — only shown when the user has at least one action */}
+					{(canUpload(role) || isAdmin(role)) && (
+						<Card>
+							<CardHeader>
+								<CardTitle>Quick Actions</CardTitle>
+								<CardDescription>Common tasks</CardDescription>
+							</CardHeader>
+							<CardContent className="flex flex-col gap-3">
+								{canUpload(role) && (
+									<Link href="/upload">
 										<Button className="w-full" variant="outline">
-											Manage Users
+											Upload Content
 										</Button>
 									</Link>
-									<Link href="/admin/content">
-										<Button className="w-full" variant="outline">
-											Manage Content
-										</Button>
-									</Link>
-								</>
-							)}
-						</CardContent>
-					</Card>
+								)}
+								{isAdmin(role) && (
+									<>
+										<Link href="/admin/users">
+											<Button className="w-full" variant="outline">
+												Manage Users
+											</Button>
+										</Link>
+										<Link href="/admin/content">
+											<Button className="w-full" variant="outline">
+												Manage Content
+											</Button>
+										</Link>
+									</>
+								)}
+							</CardContent>
+						</Card>
+					)}
 
 					{/* Admin Stats */}
 					{isAdmin(role) && (
