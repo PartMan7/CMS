@@ -20,8 +20,7 @@ async function main() {
 	const adminPassword = process.env.INITIAL_ADMIN_PASSWORD;
 	if (!adminPassword) {
 		throw new Error(
-			'INITIAL_ADMIN_PASSWORD environment variable is required. ' +
-				'Set it to a strong password before running the seed.',
+			'INITIAL_ADMIN_PASSWORD environment variable is required. ' + 'Set it to a strong password before running the seed.'
 		);
 	}
 

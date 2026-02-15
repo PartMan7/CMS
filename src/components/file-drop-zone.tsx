@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Upload, ClipboardPaste, X, FileIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -24,14 +24,7 @@ function formatSize(bytes: number): string {
 	return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function FileDropZone({
-	inputRef: externalRef,
-	name = 'file',
-	id,
-	required,
-	'aria-required': ariaRequired,
-	onFileChange,
-}: FileDropZoneProps) {
+export function FileDropZone({ inputRef: externalRef, name = 'file', id, required, onFileChange }: FileDropZoneProps) {
 	const internalRef = useRef<HTMLInputElement>(null);
 	const fileInputRef = externalRef ?? internalRef;
 	const zoneRef = useRef<HTMLDivElement>(null);
@@ -41,75 +34,66 @@ export function FileDropZone({
 	const dragCounter = useRef(0);
 
 	/** Apply a file to the hidden input and update state */
-	const applyFile = useCallback(
-		(file: File) => {
-			// Set the file on the hidden input via DataTransfer
-			const dt = new DataTransfer();
-			dt.items.add(file);
-			if (fileInputRef.current) {
-				fileInputRef.current.files = dt.files;
-			}
-			setSelectedFile(file);
-			onFileChange?.(file);
-		},
-		[fileInputRef, onFileChange]
-	);
+	function applyFile(file: File) {
+		// Set the file on the hidden input via DataTransfer
+		const dt = new DataTransfer();
+		dt.items.add(file);
+		if (fileInputRef.current) {
+			fileInputRef.current.files = dt.files;
+		}
+		setSelectedFile(file);
+		onFileChange?.(file);
+	}
 
-	const clearFile = useCallback(() => {
+	function clearFile() {
 		if (fileInputRef.current) {
 			fileInputRef.current.value = '';
 		}
 		setSelectedFile(null);
 		onFileChange?.(null);
-	}, [fileInputRef, onFileChange]);
+	}
 
 	/* ── Drag & Drop ─────────────────────────────────────────────────────── */
-	const handleDragEnter = useCallback((e: React.DragEvent) => {
+	function handleDragEnter(e: React.DragEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 		dragCounter.current++;
 		if (e.dataTransfer.types.includes('Files')) {
 			setDragging(true);
 		}
-	}, []);
+	}
 
-	const handleDragLeave = useCallback((e: React.DragEvent) => {
+	function handleDragLeave(e: React.DragEvent) {
 		e.preventDefault();
 		e.stopPropagation();
 		dragCounter.current--;
 		if (dragCounter.current === 0) {
 			setDragging(false);
 		}
-	}, []);
+	}
 
-	const handleDragOver = useCallback((e: React.DragEvent) => {
+	function handleDragOver(e: React.DragEvent) {
 		e.preventDefault();
 		e.stopPropagation();
-	}, []);
+	}
 
-	const handleDrop = useCallback(
-		(e: React.DragEvent) => {
-			e.preventDefault();
-			e.stopPropagation();
-			dragCounter.current = 0;
-			setDragging(false);
+	function handleDrop(e: React.DragEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		dragCounter.current = 0;
+		setDragging(false);
 
-			const file = e.dataTransfer.files?.[0];
-			if (file) applyFile(file);
-		},
-		[applyFile]
-	);
+		const file = e.dataTransfer.files?.[0];
+		if (file) applyFile(file);
+	}
 
 	/* ── Clipboard paste (global) ────────────────────────────────────────── */
 	useEffect(() => {
 		function handlePaste(e: ClipboardEvent) {
 			// Don't intercept if user is typing in an input/textarea
 			const target = e.target as HTMLElement;
-			if (
-				target.tagName === 'INPUT' &&
-				(target as HTMLInputElement).type !== 'file' &&
-				(target as HTMLInputElement).type !== 'hidden'
-			) return;
+			if (target.tagName === 'INPUT' && (target as HTMLInputElement).type !== 'file' && (target as HTMLInputElement).type !== 'hidden')
+				return;
 			if (target.tagName === 'TEXTAREA' || target.isContentEditable) return;
 
 			const items = e.clipboardData?.items;
@@ -129,31 +113,25 @@ export function FileDropZone({
 
 		document.addEventListener('paste', handlePaste);
 		return () => document.removeEventListener('paste', handlePaste);
-	}, [applyFile]);
+	});
 
 	/* ── Click to browse ─────────────────────────────────────────────────── */
-	const handleClick = useCallback(() => {
+	function handleClick() {
 		fileInputRef.current?.click();
-	}, [fileInputRef]);
+	}
 
-	const handleInputChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const file = e.target.files?.[0] ?? null;
-			setSelectedFile(file);
-			onFileChange?.(file);
-		},
-		[onFileChange]
-	);
+	function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+		const file = e.target.files?.[0] ?? null;
+		setSelectedFile(file);
+		onFileChange?.(file);
+	}
 
-	const handleKeyDown = useCallback(
-		(e: React.KeyboardEvent) => {
-			if (e.key === 'Enter' || e.key === ' ') {
-				e.preventDefault();
-				handleClick();
-			}
-		},
-		[handleClick]
-	);
+	function handleKeyDown(e: React.KeyboardEvent) {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			handleClick();
+		}
+	}
 
 	return (
 		<div className="space-y-2">
@@ -175,8 +153,11 @@ export function FileDropZone({
 				ref={zoneRef}
 				role="button"
 				tabIndex={0}
-				aria-label={selectedFile ? `Selected file: ${selectedFile.name}. Click to change file, or drag and drop, or paste from clipboard.` : 'Choose a file. Click to browse, drag and drop, or paste from clipboard.'}
-				aria-required={ariaRequired}
+				aria-label={
+					selectedFile
+						? `Selected file: ${selectedFile.name}. Click to change file, or drag and drop, or paste from clipboard.`
+						: 'Choose a file. Click to browse, drag and drop, or paste from clipboard.'
+				}
 				onClick={handleClick}
 				onKeyDown={handleKeyDown}
 				onDragEnter={handleDragEnter}
@@ -226,9 +207,7 @@ export function FileDropZone({
 							<Upload className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
 						)}
 						<div className="text-center space-y-1">
-							<p className="text-sm font-medium">
-								{dragging ? 'Drop file here' : 'Click to browse, drag & drop'}
-							</p>
+							<p className="text-sm font-medium">{dragging ? 'Drop file here' : 'Click to browse, drag & drop'}</p>
 							<p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5">
 								<ClipboardPaste className="h-3 w-3" aria-hidden="true" />
 								or paste from clipboard

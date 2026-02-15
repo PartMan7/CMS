@@ -40,9 +40,7 @@ vi.mock('@/lib/storage', () => ({
 vi.doUnmock('@/lib/preview');
 
 // Dynamic import to get the real implementation (after mocks are applied)
-const { isPreviewable, generatePreviewBuffer, generateAndSavePreview, deletePreview } = await import(
-	'@/lib/preview'
-);
+const { isPreviewable, generatePreviewBuffer, generateAndSavePreview, deletePreview } = await import('@/lib/preview');
 
 describe('preview utilities', () => {
 	beforeEach(() => {
@@ -114,11 +112,7 @@ describe('preview utilities', () => {
 			const buffer = Buffer.from('image-data');
 			const result = await generateAndSavePreview(buffer, 'image/jpeg', 'test-file.jpg');
 			expect(result).toBe('mock/preview-path.jpg');
-			expect(mockSaveFile).toHaveBeenCalledWith(
-				Buffer.from('compressed-preview'),
-				'preview-test-file.jpg.jpg',
-				undefined
-			);
+			expect(mockSaveFile).toHaveBeenCalledWith(Buffer.from('compressed-preview'), 'preview-test-file.jpg.jpg', undefined);
 		});
 
 		it('passes subDir through to saveFile', async () => {

@@ -1,13 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import {
-	type AccentName,
-	DEFAULT_ACCENT,
-	getStoredAccent,
-	setStoredAccent,
-	applyAccent,
-} from '@/lib/accents';
+import { type AccentName, DEFAULT_ACCENT, getStoredAccent, setStoredAccent, applyAccent } from '@/lib/accents';
 
 interface AccentContextValue {
 	accent: AccentName;
@@ -24,14 +18,11 @@ export function useAccent() {
 }
 
 export function AccentProvider({ children }: { children: React.ReactNode }) {
-	const [accent, setAccentState] = useState<AccentName>(DEFAULT_ACCENT);
+	const [accent, setAccentState] = useState<AccentName>(() => getStoredAccent() ?? DEFAULT_ACCENT);
 
-	// On mount, read from localStorage and apply
+	// Apply accent CSS custom properties on mount
 	useEffect(() => {
-		const stored = getStoredAccent();
-		const initial = stored ?? DEFAULT_ACCENT;
-		setAccentState(initial);
-		applyAccent(initial);
+		applyAccent(getStoredAccent() ?? DEFAULT_ACCENT);
 	}, []);
 
 	const setAccent = useCallback((next: AccentName) => {
@@ -40,9 +31,5 @@ export function AccentProvider({ children }: { children: React.ReactNode }) {
 		applyAccent(next);
 	}, []);
 
-	return (
-		<AccentContext.Provider value={{ accent, setAccent }}>
-			{children}
-		</AccentContext.Provider>
-	);
+	return <AccentContext.Provider value={{ accent, setAccent }}>{children}</AccentContext.Provider>;
 }

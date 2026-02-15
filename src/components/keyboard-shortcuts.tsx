@@ -1,14 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 
 interface Shortcut {
@@ -21,13 +15,15 @@ interface ShortcutGroup {
 	shortcuts: Shortcut[];
 }
 
+const emptySubscribe = () => () => {};
+
 /** Detect macOS / iOS so we can show the correct modifier symbol. */
 function useIsMac() {
-	const [isMac, setIsMac] = useState(false);
-	useEffect(() => {
-		setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent));
-	}, []);
-	return isMac;
+	return useSyncExternalStore(
+		emptySubscribe,
+		() => /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent),
+		() => false
+	);
 }
 
 /** Return the display string for the "Ctrl / Cmd" modifier. */
@@ -52,9 +48,7 @@ export function KeyboardShortcuts() {
 		() => [
 			{
 				title: 'General',
-				shortcuts: [
-					{ keys: [mod, '/'], label: 'Show keyboard shortcuts' },
-				],
+				shortcuts: [{ keys: [mod, '/'], label: 'Show keyboard shortcuts' }],
 			},
 			{
 				title: 'Navigation',
@@ -83,10 +77,7 @@ export function KeyboardShortcuts() {
 			// Don't trigger shortcuts when typing in inputs
 			const target = e.target as HTMLElement;
 			const isInput =
-				target.tagName === 'INPUT' ||
-				target.tagName === 'TEXTAREA' ||
-				target.tagName === 'SELECT' ||
-				target.isContentEditable;
+				target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable;
 
 			// Ctrl+/ or Cmd+/ — toggle shortcuts dialog
 			if ((e.ctrlKey || e.metaKey) && e.key === '/') {
@@ -126,23 +117,16 @@ export function KeyboardShortcuts() {
 			<DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>Keyboard Shortcuts</DialogTitle>
-					<DialogDescription>
-						Use these shortcuts to navigate and interact with the CMS.
-					</DialogDescription>
+					<DialogDescription>Use these shortcuts to navigate and interact with the CMS.</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4 mt-2">
 					{shortcutGroups.map((group, gi) => (
 						<div key={group.title}>
 							{gi > 0 && <Separator className="mb-4" />}
-							<h3 className="text-sm font-semibold text-muted-foreground mb-3">
-								{group.title}
-							</h3>
+							<h3 className="text-sm font-semibold text-muted-foreground mb-3">{group.title}</h3>
 							<div className="space-y-2">
 								{group.shortcuts.map((shortcut, si) => (
-									<div
-										key={si}
-										className="flex items-center justify-between py-1"
-									>
+									<div key={si} className="flex items-center justify-between py-1">
 										<span className="text-sm">{shortcut.label}</span>
 										<div className="flex items-center gap-1">
 											{shortcut.keys.map((key, ki) => (
@@ -159,8 +143,7 @@ export function KeyboardShortcuts() {
 				</div>
 				<div className="mt-2 pt-3 border-t">
 					<p className="text-xs text-muted-foreground text-center">
-						Press <kbd className={KBD_SMALL_CLASSES}>{mod}</kbd>{' '}
-						<kbd className={KBD_SMALL_CLASSES}>/</kbd> to close
+						Press <kbd className={KBD_SMALL_CLASSES}>{mod}</kbd> <kbd className={KBD_SMALL_CLASSES}>/</kbd> to close
 					</p>
 				</div>
 			</DialogContent>

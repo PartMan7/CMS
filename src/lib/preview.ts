@@ -9,15 +9,7 @@ const PREVIEW_MAX_HEIGHT = 200;
 const PREVIEW_QUALITY = 50;
 
 /** Mime types that support preview generation */
-const PREVIEWABLE_MIMES = new Set([
-	'image/jpeg',
-	'image/png',
-	'image/gif',
-	'image/webp',
-	'image/avif',
-	'image/tiff',
-	'image/bmp',
-]);
+const PREVIEWABLE_MIMES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/tiff', 'image/bmp']);
 
 /**
  * Check if a given MIME type supports preview generation.

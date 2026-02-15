@@ -101,9 +101,7 @@ export default function InvitePage() {
 							<Alert variant="destructive">
 								<AlertDescription>{errorMessage}</AlertDescription>
 							</Alert>
-							<p className="text-sm text-muted-foreground text-center">
-								Please contact your administrator for a new invite link.
-							</p>
+							<p className="text-sm text-muted-foreground text-center">Please contact your administrator for a new invite link.</p>
 						</CardContent>
 					</>
 				)}
@@ -126,7 +124,10 @@ export default function InvitePage() {
 									)}
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="password">Password<RequiredMark /></Label>
+									<Label htmlFor="password">
+										Password
+										<RequiredMark />
+									</Label>
 									<Input
 										id="password"
 										name="password"
@@ -139,7 +140,10 @@ export default function InvitePage() {
 									/>
 								</div>
 								<div className="space-y-2">
-									<Label htmlFor="confirmPassword">Confirm Password<RequiredMark /></Label>
+									<Label htmlFor="confirmPassword">
+										Confirm Password
+										<RequiredMark />
+									</Label>
 									<Input
 										id="confirmPassword"
 										name="confirmPassword"

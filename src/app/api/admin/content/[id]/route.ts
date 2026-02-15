@@ -65,7 +65,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 		}
 
 		// Update content fields
-		const content = await prisma.content.update({
+		await prisma.content.update({
 			where: { id },
 			data: updateData,
 		});

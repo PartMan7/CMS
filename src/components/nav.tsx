@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 import { useAccent } from '@/components/accent-provider';
 import { ACCENTS, ACCENT_NAMES, type AccentName } from '@/lib/accents';
 
+const emptySubscribe = () => () => {};
+
 interface NavProps {
 	role: string;
 	username: string;
@@ -37,8 +39,11 @@ export function Nav({ role, username }: NavProps) {
 	const pathname = usePathname();
 	const { resolvedTheme, setTheme } = useTheme();
 	const { accent, setAccent } = useAccent();
-	const [mounted, setMounted] = useState(false);
-	useEffect(() => setMounted(true), []);
+	const mounted = useSyncExternalStore(
+		emptySubscribe,
+		() => true,
+		() => false
+	);
 
 	const links = [
 		{ href: '/upload', label: 'Upload', minRole: 'uploader' },
@@ -108,9 +113,11 @@ export function Nav({ role, username }: NavProps) {
 					<span className="text-[10px] text-muted-foreground text-center">
 						Colours from{' '}
 						<a
-							href={mounted && resolvedTheme === 'dark'
-								? 'https://github.com/PartMan7/catppuccin'
-								: 'https://github.com/catppuccin/catppuccin#latte'}
+							href={
+								mounted && resolvedTheme === 'dark'
+									? 'https://github.com/PartMan7/catppuccin'
+									: 'https://github.com/catppuccin/catppuccin#latte'
+							}
 							target="_blank"
 							rel="noopener noreferrer"
 							className="underline hover:text-foreground transition-colors"

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useSyncExternalStore } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,11 +26,21 @@ export interface ContentViewData {
 
 /* ── helpers ────────────────────────────────────────────────────────── */
 
-function isImage(mime: string) { return mime.startsWith('image/'); }
-function isVideo(mime: string) { return mime.startsWith('video/'); }
-function isAudio(mime: string) { return mime.startsWith('audio/'); }
-function isPdf(mime: string) { return mime === 'application/pdf'; }
-function isText(mime: string) { return mime === 'text/plain' || mime === 'text/csv'; }
+function isImage(mime: string) {
+	return mime.startsWith('image/');
+}
+function isVideo(mime: string) {
+	return mime.startsWith('video/');
+}
+function isAudio(mime: string) {
+	return mime.startsWith('audio/');
+}
+function isPdf(mime: string) {
+	return mime === 'application/pdf';
+}
+function isText(mime: string) {
+	return mime === 'text/plain' || mime === 'text/csv';
+}
 
 function formatSize(bytes: number): string {
 	if (bytes < 1024) return `${bytes} B`;
@@ -40,13 +50,15 @@ function formatSize(bytes: number): string {
 
 /* ── CopyField — a clickable row that copies a full URL ─────────── */
 
+const emptySubscribe = () => () => {};
+
 function CopyField({ label, path }: { label: string; path: string }) {
 	const [copied, setCopied] = useState(false);
-	const [origin, setOrigin] = useState('');
-
-	useEffect(() => {
-		setOrigin(window.location.origin);
-	}, []);
+	const origin = useSyncExternalStore(
+		emptySubscribe,
+		() => window.location.origin,
+		() => ''
+	);
 
 	const fullUrl = `${origin}${path}`;
 
@@ -73,10 +85,11 @@ function CopyField({ label, path }: { label: string; path: string }) {
 							className="inline-flex items-center gap-1.5 text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background rounded-sm cursor-pointer text-left"
 						>
 							<span className="truncate max-w-64">{path}</span>
-							{copied
-								? <Check className="h-3.5 w-3.5 shrink-0 text-green-500" aria-hidden="true" />
-								: <Copy className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-							}
+							{copied ? (
+								<Check className="h-3.5 w-3.5 shrink-0 text-green-500" aria-hidden="true" />
+							) : (
+								<Copy className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+							)}
 						</button>
 					</TooltipTrigger>
 					<TooltipContent>{copied ? 'Copied!' : `Copy ${fullUrl}`}</TooltipContent>
@@ -150,9 +163,7 @@ export function ContentViewer({ content }: { content: ContentViewData }) {
 
 					{isPdf(mime) && <iframe src={rawUrl} className="w-full h-[80vh] rounded border-0" title={content.filename} />}
 
-					{isText(mime) && (
-						<iframe src={rawUrl} className="w-full h-[60vh] rounded border-0 bg-muted" title={content.filename} />
-					)}
+					{isText(mime) && <iframe src={rawUrl} className="w-full h-[60vh] rounded border-0 bg-muted" title={content.filename} />}
 
 					{!isImage(mime) && !isVideo(mime) && !isAudio(mime) && !isPdf(mime) && !isText(mime) && (
 						<div className="text-center py-12 space-y-4">
@@ -180,7 +191,9 @@ export function ContentViewer({ content }: { content: ContentViewData }) {
 						<dd>{content.mimeType}</dd>
 
 						<dt className="text-muted-foreground">Extension</dt>
-						<dd><Badge variant="secondary">{content.fileExtension}</Badge></dd>
+						<dd>
+							<Badge variant="secondary">{content.fileExtension}</Badge>
+						</dd>
 
 						<dt className="text-muted-foreground">Uploaded By</dt>
 						<dd>{content.uploadedBy.username}</dd>
@@ -194,7 +207,9 @@ export function ContentViewer({ content }: { content: ContentViewData }) {
 						{content.directory && (
 							<>
 								<dt className="text-muted-foreground">Directory</dt>
-								<dd><Badge variant="outline">{content.directory}</Badge></dd>
+								<dd>
+									<Badge variant="outline">{content.directory}</Badge>
+								</dd>
 							</>
 						)}
 					</dl>

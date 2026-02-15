@@ -151,7 +151,10 @@ export function AdminUploadForm() {
 						</div>
 
 						<div className="space-y-2">
-							<Label>File<RequiredMark /></Label>
+							<Label>
+								File
+								<RequiredMark />
+							</Label>
 							<FileDropZone key={fileResetKey} inputRef={fileRef} name="file" required aria-required="true" />
 						</div>
 
@@ -198,7 +201,10 @@ export function AdminUploadForm() {
 						</div>
 
 						<div className="space-y-2">
-							<Label>Expiry<RequiredMark /></Label>
+							<Label>
+								Expiry
+								<RequiredMark />
+							</Label>
 							<Select value={expiry} onValueChange={setExpiry} required>
 								<SelectTrigger aria-required="true">
 									<SelectValue placeholder="Select expiry time" />

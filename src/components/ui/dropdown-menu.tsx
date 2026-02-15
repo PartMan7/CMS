@@ -14,17 +14,11 @@ function DropdownMenuPortal({ ...props }: React.ComponentProps<typeof DropdownMe
 	return <DropdownMenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />;
 }
 
-function DropdownMenuTrigger({
-	className,
-	...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+function DropdownMenuTrigger({ className, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
 	return (
 		<DropdownMenuPrimitive.Trigger
 			data-slot="dropdown-menu-trigger"
-			className={cn(
-				'data-[state=open]:bg-accent data-[state=open]:text-accent-foreground transition-colors',
-				className
-			)}
+			className={cn('data-[state=open]:bg-accent data-[state=open]:text-accent-foreground transition-colors', className)}
 			{...props}
 		/>
 	);

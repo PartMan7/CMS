@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { GET, POST } from '@/app/api/admin/users/route';
 import { GET as GET_ID, PUT, DELETE } from '@/app/api/admin/users/[id]/route';
-import { mockAdmin, mockUploader, mockUnauthenticated, mockPrisma, mockSession } from '../../setup';
+import { mockAdmin, mockUploader, mockUnauthenticated, mockPrisma } from '../../setup';
 import { jsonRequest, parseResponse } from '../../helpers';
 import { NextRequest } from 'next/server';
 
