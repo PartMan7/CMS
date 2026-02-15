@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# Hourly cleanup of expired CMS content.
+# Hourly cleanup of expired PartFiles content.
 # Intended to be invoked by crontab:
-#   0 * * * * /path/to/CMS/scripts/cron-cleanup.sh >> /path/to/CMS/logs/cleanup.log 2>&1
+#   0 * * * * /path/to/PartFiles/scripts/cron-cleanup.sh >> /path/to/PartFiles/logs/cleanup.log 2>&1
 #
 # Required env vars (reads from .env by default):
 #   CRON_SECRET   – must match the server's CRON_SECRET

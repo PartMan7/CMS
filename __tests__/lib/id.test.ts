@@ -5,12 +5,12 @@ import { mockPrisma } from '../setup';
 const { generateContentId } = await vi.importActual<typeof import('@/lib/id')>('@/lib/id');
 
 describe('generateContentId', () => {
-	it('returns an 8-character lowercase alphanumeric string', async () => {
+	it('returns a 6-character lowercase alphanumeric string', async () => {
 		// prisma.content.findUnique is mocked to return null (no collision)
 		mockPrisma.content.findUnique.mockResolvedValue(null);
 		const id = await generateContentId();
-		expect(id).toHaveLength(8);
-		expect(id).toMatch(/^[a-z0-9]{8}$/);
+		expect(id).toHaveLength(6);
+		expect(id).toMatch(/^[a-z0-9]{6}$/);
 	});
 
 	it('generates unique IDs across multiple calls', async () => {
@@ -19,7 +19,7 @@ describe('generateContentId', () => {
 		for (let i = 0; i < 50; i++) {
 			ids.add(await generateContentId());
 		}
-		// With 8 chars of base36 the chance of any collision in 50 is negligible
+		// With 6 chars of base36 the chance of any collision in 50 is negligible
 		expect(ids.size).toBe(50);
 	});
 
@@ -30,7 +30,7 @@ describe('generateContentId', () => {
 			.mockResolvedValueOnce(null); // no collision
 
 		const id = await generateContentId();
-		expect(id).toHaveLength(8);
+		expect(id).toHaveLength(6);
 		expect(mockPrisma.content.findUnique).toHaveBeenCalledTimes(2);
 	});
 

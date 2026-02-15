@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 // Mock environment variables
 process.env.AUTH_SECRET = 'test-secret-at-least-32-characters-long';
 process.env.CRON_SECRET = 'test-cron-secret';
-process.env.UPLOAD_DIR = '/tmp/cms-test-uploads';
+process.env.UPLOAD_DIR = '/tmp/partfiles-test-uploads';
 process.env.DATABASE_URL = 'file:./test.db';
 process.env.BASE_URL = 'http://localhost:3000';
 
@@ -68,9 +68,13 @@ export const mockPrisma = {
 	content: createMockModel(),
 	shortSlug: createMockModel(),
 	allowedDirectory: createMockModel(),
+	inviteToken: createMockModel(),
 	// $transaction passes the mock prisma itself to the callback so
 	// existing model mocks work inside transactions.
-	$transaction: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma)),
+	$transaction: vi.fn(async (fnOrArray: ((tx: unknown) => Promise<unknown>) | unknown[]) => {
+		if (typeof fnOrArray === 'function') return fnOrArray(mockPrisma);
+		return Promise.all(fnOrArray);
+	}),
 };
 
 vi.mock('@/lib/prisma', () => ({
@@ -81,8 +85,8 @@ vi.mock('@/lib/prisma', () => ({
 export const mockStorage = {
 	saveFile: vi.fn().mockResolvedValue('mock/storage/path.txt'),
 	deleteFile: vi.fn().mockResolvedValue(undefined),
-	getFilePath: vi.fn().mockReturnValue('/tmp/cms-test-uploads/mock/storage/path.txt'),
-	ensureUploadDir: vi.fn().mockReturnValue('/tmp/cms-test-uploads'),
+	getFilePath: vi.fn().mockReturnValue('/tmp/partfiles-test-uploads/mock/storage/path.txt'),
+	ensureUploadDir: vi.fn().mockReturnValue('/tmp/partfiles-test-uploads'),
 	fileExists: vi.fn().mockResolvedValue(true),
 };
 
@@ -157,12 +161,15 @@ beforeEach(() => {
 	);
 
 	// Reset $transaction mock
-	mockPrisma.$transaction.mockReset().mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma));
+	mockPrisma.$transaction.mockReset().mockImplementation(async (fnOrArray: ((tx: unknown) => Promise<unknown>) | unknown[]) => {
+		if (typeof fnOrArray === 'function') return fnOrArray(mockPrisma);
+		return Promise.all(fnOrArray);
+	});
 
 	// Reset storage mocks
 	mockStorage.saveFile.mockReset().mockResolvedValue('mock/storage/path.txt');
 	mockStorage.deleteFile.mockReset().mockResolvedValue(undefined);
-	mockStorage.getFilePath.mockReset().mockReturnValue('/tmp/cms-test-uploads/mock/storage/path.txt');
+	mockStorage.getFilePath.mockReset().mockReturnValue('/tmp/partfiles-test-uploads/mock/storage/path.txt');
 
 	// Reset ID mock
 	mockId.generateContentId.mockReset().mockResolvedValue('ab12cd34');

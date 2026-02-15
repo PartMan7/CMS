@@ -62,8 +62,8 @@ export function LoginForm() {
 		<div className="min-h-screen flex items-center justify-center p-4">
 			<Card className="w-full max-w-md border-primary/25">
 				<CardHeader className="text-center">
-					<CardTitle className="text-2xl text-primary">CMS Login</CardTitle>
-					<CardDescription>Sign in to cms.partman.dev</CardDescription>
+					<CardTitle className="text-2xl text-primary">PartFiles Login</CardTitle>
+					<CardDescription>Sign in to files.partman.dev</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<form onSubmit={handleSubmit} className="space-y-4" aria-label="Login form">

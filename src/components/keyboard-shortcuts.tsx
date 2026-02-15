@@ -117,7 +117,7 @@ export function KeyboardShortcuts() {
 			<DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>Keyboard Shortcuts</DialogTitle>
-					<DialogDescription>Use these shortcuts to navigate and interact with the CMS.</DialogDescription>
+					<DialogDescription>Use these shortcuts to navigate and interact with PartFiles.</DialogDescription>
 				</DialogHeader>
 				<div className="space-y-4 mt-2">
 					{shortcutGroups.map((group, gi) => (

@@ -175,8 +175,8 @@ export function Nav({ role, username }: NavProps) {
 				<div className="flex items-center justify-between h-14">
 					{/* Left: logo + desktop links */}
 					<div className="flex items-center gap-6">
-						<Link href="/upload" className="font-semibold text-lg text-primary" aria-label="CMS - Go to upload">
-							CMS
+						<Link href="/upload" className="font-semibold text-lg text-primary" aria-label="PartFiles - Go to upload">
+							PartFiles
 						</Link>
 
 						{/* Desktop nav links — hidden on small screens */}

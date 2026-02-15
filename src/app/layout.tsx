@@ -9,8 +9,8 @@ import { ACCENTS } from '@/lib/accents';
 import './globals.css';
 
 export const metadata: Metadata = {
-	title: 'CMS - Content Management System',
-	description: 'Content Management System for partman.dev',
+	title: 'PartFiles',
+	description: 'File management for partman.dev',
 };
 
 /**

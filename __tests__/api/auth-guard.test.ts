@@ -68,7 +68,7 @@ function extractParams(routePath: string): Record<string, string> | null {
 // ---------------------------------------------------------------------------
 
 // Routes that are intentionally public (no session auth).
-const PUBLIC_PATTERNS = [/\/api\/auth\//];
+const PUBLIC_PATTERNS = [/\/api\/auth\//, /\/api\/invite\//];
 
 // Routes that require admin role.
 const ADMIN_PATTERNS = [/\/api\/admin\//, /\/api\/directories/];
