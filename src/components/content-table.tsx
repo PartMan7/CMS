@@ -27,6 +27,7 @@ import {
 	ArrowUp,
 	ArrowDown,
 	X,
+	ImageOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -517,13 +518,19 @@ export function ContentManager() {
 								{/* Preview */}
 								<TableCell>
 									{isImage(item.mimeType) && item.hasPreview ? (
-										/* eslint-disable-next-line @next/next/no-img-element */
-										<img
-											src={`/api/preview/${item.id}`}
-											alt={item.filename}
-											className="w-10 h-10 object-cover rounded border"
-											loading="lazy"
-										/>
+										isExpired(item.expiresAt) ? (
+											<div className="w-10 h-10 rounded border flex items-center justify-center bg-muted">
+												<ImageOff className="h-5 w-5 text-muted-foreground" aria-label="Preview expired" />
+											</div>
+										) : (
+											/* eslint-disable-next-line @next/next/no-img-element */
+											<img
+												src={`/api/preview/${item.id}`}
+												alt={item.filename}
+												className="w-10 h-10 object-cover rounded border"
+												loading="lazy"
+											/>
+										)
 									) : (
 										<FileExtIcon ext={item.fileExtension} />
 									)}
