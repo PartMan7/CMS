@@ -85,8 +85,9 @@ export function Nav({ role, username }: NavProps) {
 		() => false
 	);
 
+	const baseUrl = getBaseUrl();
+
 	const links = useMemo(() => {
-		const baseUrl = getBaseUrl();
 		return [
 			{ href: '/upload', label: 'Upload', minRole: 'uploader' },
 			{ href: '/dashboard', label: 'Dashboard', minRole: 'guest' },
@@ -96,7 +97,7 @@ export function Nav({ role, username }: NavProps) {
 			...link,
 			href: `${baseUrl}${link.href}`,
 		}));
-	}, []);
+	}, [baseUrl]);
 
 	const roleLevel: Record<string, number> = {
 		guest: 0,
@@ -221,20 +222,22 @@ export function Nav({ role, username }: NavProps) {
 		</>
 	);
 
+	const checkIsCurrent = useCallback((href: string) => href.endsWith(pathname), [pathname]);
+
 	return (
 		<nav className="border-b bg-card" aria-label="Main navigation">
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div className="flex items-center justify-between h-14">
 					{/* Left: logo + desktop links */}
 					<div className="flex items-center gap-6">
-						<Link href="/upload" className="font-semibold text-lg text-primary" aria-label="PartFiles - Go to upload">
+						<Link href={`${baseUrl}/upload`} className="font-semibold text-lg text-primary" aria-label="PartFiles - Go to upload">
 							PartFiles
 						</Link>
 
 						{/* Desktop nav links — hidden on small screens */}
 						<div className="hidden md:flex items-center gap-1" role="list" aria-label="Site pages">
 							{visibleLinks.map(link => {
-								const isCurrent = pathname === link.href;
+								const isCurrent = checkIsCurrent(link.href);
 								return (
 									<Link
 										key={link.href}
@@ -302,7 +305,7 @@ export function Nav({ role, username }: NavProps) {
 
 								{/* Nav links */}
 								{visibleLinks.map(link => {
-									const isCurrent = pathname === link.href;
+									const isCurrent = checkIsCurrent(link.href);
 									return (
 										<DropdownMenuItem key={link.href} asChild>
 											<Link
