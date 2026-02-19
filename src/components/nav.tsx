@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -18,9 +18,41 @@ import {
 import { Sun, Moon, Palette, Keyboard, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAccent } from '@/components/accent-provider';
-import { ACCENTS, ACCENT_NAMES, type AccentName } from '@/lib/accents';
+import { ACCENTS, ACCENT_DISPLAY_ORDER, type AccentName } from '@/lib/accents';
 
 const emptySubscribe = () => () => {};
+
+const ACCENT_GRID_COLS = 7;
+
+function handleAccentGridKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+	const buttons = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button'));
+	const idx = buttons.indexOf(e.target as HTMLButtonElement);
+	if (idx === -1) return;
+
+	let next: number;
+	switch (e.key) {
+		case 'ArrowRight':
+			next = (idx + 1) % buttons.length;
+			break;
+		case 'ArrowLeft':
+			next = (idx - 1 + buttons.length) % buttons.length;
+			break;
+		case 'ArrowDown':
+			next = idx + ACCENT_GRID_COLS;
+			if (next >= buttons.length) return;
+			break;
+		case 'ArrowUp':
+			next = idx - ACCENT_GRID_COLS;
+			if (next < 0) return;
+			break;
+		default:
+			return;
+	}
+
+	e.preventDefault();
+	e.stopPropagation();
+	buttons[next].focus();
+}
 
 interface NavProps {
 	role: string;
@@ -39,6 +71,13 @@ export function Nav({ role, username }: NavProps) {
 	const pathname = usePathname();
 	const { resolvedTheme, setTheme } = useTheme();
 	const { accent, setAccent } = useAccent();
+	const accentGridRef = useCallback((node: HTMLDivElement | null) => {
+		if (!node) return;
+		requestAnimationFrame(() => {
+			const selected = node.querySelector<HTMLButtonElement>('button[aria-pressed="true"]');
+			(selected ?? node.querySelector<HTMLButtonElement>('button'))?.focus();
+		});
+	}, []);
 	const mounted = useSyncExternalStore(
 		emptySubscribe,
 		() => true,
@@ -95,15 +134,21 @@ export function Nav({ role, username }: NavProps) {
 					<TooltipContent>Accent colour</TooltipContent>
 				</Tooltip>
 				<DropdownMenuContent align="end" className="flex flex-col gap-1.5 p-2 w-auto min-w-0" aria-label="Accent colour options">
-					<div className="grid grid-cols-7 gap-1">
-						{ACCENT_NAMES.map(name => (
+					<div
+						ref={accentGridRef}
+						className="grid grid-cols-7 gap-1"
+						role="group"
+						aria-label="Accent colours"
+						onKeyDown={handleAccentGridKeyDown}
+					>
+						{ACCENT_DISPLAY_ORDER.map(name => (
 							<button
 								key={name}
 								onClick={() => setAccent(name)}
 								aria-label={`${ACCENTS[name].label} accent${accent === name ? ' (selected)' : ''}`}
 								aria-pressed={accent === name}
 								className={cn(
-									'w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+									'w-6 h-6 rounded-full transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground',
 									accent === name && 'ring-2 ring-foreground ring-offset-2 ring-offset-background'
 								)}
 								style={{ backgroundColor: accentHex(name) }}

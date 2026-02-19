@@ -28,7 +28,27 @@ export const ACCENTS = {
 
 export type AccentName = keyof typeof ACCENTS;
 
-export const ACCENT_NAMES = Object.keys(ACCENTS) as AccentName[];
+/**
+ * Display order for the accent grid (7-column layout).
+ * Row 1: softer/pastel variants in rainbow order.
+ * Row 2: vivid/saturated variants, columns aligned by hue.
+ */
+export const ACCENT_DISPLAY_ORDER: AccentName[] = [
+	'rosewater',
+	'flamingo',
+	'yellow',
+	'green',
+	'sky',
+	'lavender',
+	'pink',
+	'maroon',
+	'red',
+	'peach',
+	'teal',
+	'sapphire',
+	'blue',
+	'mauve',
+];
 
 export const DEFAULT_ACCENT: AccentName = 'mauve';
 

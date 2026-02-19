@@ -104,10 +104,10 @@ function FileExtIcon({ ext }: { ext: string }) {
 		<div className={`relative w-10 h-10 rounded-md ${bg} flex flex-col items-center justify-end overflow-hidden border`}>
 			{/* Folded corner */}
 			<div className="absolute top-0 right-0 w-3 h-3">
-				<div className="absolute top-0 right-0 w-0 h-0 border-t-[12px] border-t-background border-l-[12px] border-l-transparent" />
+				<div className="absolute top-0 right-0 w-0 h-0 border-t-12 border-t-background border-l-12 border-l-transparent" />
 			</div>
 			{/* Extension label pill */}
-			<div className={`${accent} rounded-sm px-1 py-[1px] mb-1.5`}>
+			<div className={`${accent} rounded-sm px-1 py-1 mb-1.5`}>
 				<span className="text-[8px] font-extrabold leading-none text-white tracking-wide">{label}</span>
 			</div>
 		</div>

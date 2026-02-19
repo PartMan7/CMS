@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
@@ -40,9 +40,20 @@ const KBD_SMALL_CLASSES =
 
 export function KeyboardShortcuts() {
 	const [open, setOpen] = useState(false);
+	const openRef = useRef(false);
+	const triggerRef = useRef<HTMLElement | null>(null);
 	const router = useRouter();
 	const pathname = usePathname();
 	const mod = useModKey();
+
+	useEffect(() => {
+		openRef.current = open;
+		if (!open && triggerRef.current) {
+			const el = triggerRef.current;
+			triggerRef.current = null;
+			requestAnimationFrame(() => el.focus());
+		}
+	}, [open]);
 
 	const shortcutGroups: ShortcutGroup[] = useMemo(
 		() => [
@@ -82,6 +93,9 @@ export function KeyboardShortcuts() {
 			// Ctrl+/ or Cmd+/ — toggle shortcuts dialog
 			if ((e.ctrlKey || e.metaKey) && e.key === '/') {
 				e.preventDefault();
+				if (!openRef.current && document.activeElement instanceof HTMLElement) {
+					triggerRef.current = document.activeElement;
+				}
 				setOpen(prev => !prev);
 				return;
 			}

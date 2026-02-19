@@ -36,12 +36,12 @@ function DropdownMenuContent({
 				data-slot="dropdown-menu-content"
 				sideOffset={sideOffset}
 				className={cn(
-					'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) rounded-md border p-1 shadow-md',
-					className
+					'bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] origin-(--radix-dropdown-menu-content-transform-origin) rounded-md border p-1 shadow-md'
+					// className
 				)}
 				{...props}
 			>
-				<div className="relative z-1">{children}</div>
+				<div className={cn('relative z-1', className)}>{children}</div>
 				<DropdownMenuPrimitive.Arrow className="bg-popover fill-popover -z-10 size-2.5 translate-y-[-50%] rotate-45 rounded-tl-[2px] border-b border-r" />
 			</DropdownMenuPrimitive.Content>
 		</DropdownMenuPrimitive.Portal>
