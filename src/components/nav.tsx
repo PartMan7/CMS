@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -19,6 +19,7 @@ import { Sun, Moon, Palette, Keyboard, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAccent } from '@/components/accent-provider';
 import { ACCENTS, ACCENT_DISPLAY_ORDER, type AccentName } from '@/lib/accents';
+import { getBaseUrl } from '../lib/config';
 
 const emptySubscribe = () => () => {};
 
@@ -84,12 +85,18 @@ export function Nav({ role, username }: NavProps) {
 		() => false
 	);
 
-	const links = [
-		{ href: '/upload', label: 'Upload', minRole: 'uploader' },
-		{ href: '/dashboard', label: 'Dashboard', minRole: 'guest' },
-		{ href: '/admin/users', label: 'Users', minRole: 'admin' },
-		{ href: '/admin/content', label: 'Content', minRole: 'admin' },
-	];
+	const links = useMemo(() => {
+		const baseUrl = getBaseUrl();
+		return [
+			{ href: '/upload', label: 'Upload', minRole: 'uploader' },
+			{ href: '/dashboard', label: 'Dashboard', minRole: 'guest' },
+			{ href: '/admin/users', label: 'Users', minRole: 'admin' },
+			{ href: '/admin/content', label: 'Content', minRole: 'admin' },
+		].map(link => ({
+			...link,
+			href: `${baseUrl}${link.href}`,
+		}));
+	}, []);
 
 	const roleLevel: Record<string, number> = {
 		guest: 0,
@@ -257,9 +264,11 @@ export function Nav({ role, username }: NavProps) {
 							</>
 						) : null}
 						{iconButtons}
-						<Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: '/login' })}>
-							Sign Out
-						</Button>
+						{role ? (
+							<Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: '/login' })}>
+								Sign Out
+							</Button>
+						) : null}
 					</div>
 
 					{/* Right side: mobile — icon buttons + hamburger */}
@@ -307,8 +316,12 @@ export function Nav({ role, username }: NavProps) {
 									);
 								})}
 
-								<DropdownMenuSeparator />
-								<DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>Sign Out</DropdownMenuItem>
+								{role ? (
+									<>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem onClick={() => signOut({ callbackUrl: '/login' })}>Sign Out</DropdownMenuItem>
+									</>
+								) : null}
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
