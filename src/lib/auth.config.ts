@@ -30,6 +30,9 @@ export const authConfig: NextAuthConfig = {
 				pathname.startsWith('/invite') ||
 				pathname.startsWith('/api/auth') ||
 				pathname.startsWith('/api/invite') ||
+				pathname.startsWith('/api/preview') ||
+				/^(\/api\/content\/[^/]+(\/raw)?)$/.test(pathname) ||
+				/^(\/(p|r|s|e)\/[^/]+)$/.test(pathname) ||
 				pathname.startsWith('/api/cron')
 			) {
 				return true;
