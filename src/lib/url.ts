@@ -1,21 +1,13 @@
-/**
- * Resolve the public-facing base URL (the "main" domain used for UI pages,
- * invite links, etc.). Falls back to localhost:3000 in development.
- */
+const BASE_URL = process.env.BASE_URL || process.env.NEXT_PUBLIC_BASE_URL || '';
+const CONTENT_URL = process.env.CONTENT_URL || process.env.NEXT_PUBLIC_CONTENT_URL || '';
+
 export function getBaseUrl(): string {
-	const publicBase = process.env.NEXT_PUBLIC_BASE_URL;
-	if (publicBase) return publicBase.replace(/\/$/, '');
+	if (process.env.NODE_ENV !== 'development' && BASE_URL) return BASE_URL.replace(/\/$/, '');
 	if (typeof window !== 'undefined') return window.location.origin;
 	return `http://localhost:${process.env.PORT || 3000}`;
 }
 
-/**
- * Resolve the content-serving base URL. When a separate content domain is
- * configured (e.g. `cdn.example.com`), content URLs (/c/, /s/, /r/, /e/)
- * will prefer it. Falls back to the main domain when CONTENT_URL is unset.
- */
 export function getContentUrl(): string {
-	const publicContent = process.env.NEXT_PUBLIC_CONTENT_URL;
-	if (publicContent) return publicContent.replace(/\/$/, '');
+	if (process.env.NODE_ENV !== 'development' && CONTENT_URL) return CONTENT_URL.replace(/\/$/, '');
 	return getBaseUrl();
 }
