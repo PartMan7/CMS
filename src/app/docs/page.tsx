@@ -1,6 +1,6 @@
 'use client';
 
-import { AnyApiReferenceConfiguration, ApiReferenceReact, ReferenceProps } from '@scalar/api-reference-react';
+import { AnyApiReferenceConfiguration, ApiReferenceReact } from '@scalar/api-reference-react';
 import '@scalar/api-reference-react/style.css';
 import { Nav } from '@/components/nav';
 import { useSession } from 'next-auth/react';
