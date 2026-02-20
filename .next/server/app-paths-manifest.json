@@ -25,8 +25,8 @@
   "/docs/page": "app/docs/page.js",
   "/invite/[token]/page": "app/invite/[token]/page.js",
   "/login/page": "app/login/page.js",
-  "/page": "app/page.js",
   "/privacy/page": "app/privacy/page.js",
+  "/page": "app/page.js",
   "/s/[slug]/page": "app/s/[slug]/page.js",
   "/upload/page": "app/upload/page.js"
 }
