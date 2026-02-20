@@ -48,7 +48,7 @@ jobs:
           AUTH_SECRET="build-placeholder-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
           BASE_URL="http://localhost:3000"
           EOF
-          npx prisma db push --skip-generate --accept-data-loss
+          npx prisma db push --accept-data-loss
 
       - name: Build
         run: npm run build
