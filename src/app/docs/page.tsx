@@ -1,6 +1,6 @@
 'use client';
 
-import { ApiReferenceReact } from '@scalar/api-reference-react';
+import { AnyApiReferenceConfiguration, ApiReferenceReact, ReferenceProps } from '@scalar/api-reference-react';
 import '@scalar/api-reference-react/style.css';
 import { Nav } from '@/components/nav';
 import { useSession } from 'next-auth/react';
@@ -121,11 +121,14 @@ export default function ApiDocs() {
 				<div id="scalar-docs-container">
 					<ApiReferenceReact
 						configuration={{
+							spec: {
+								url: '/openapi.json', // not typed in ApiReferenceConfiguration but needed to work
+							},
 							theme: 'none',
 							showSidebar: true,
 							hideDownloadButton: false,
 							customCss: customCss,
-						}}
+						} as AnyApiReferenceConfiguration}
 					/>
 				</div>
 			</main>
